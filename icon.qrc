@@ -1,0 +1,24 @@
+<RCC>
+  <qresource prefix="icon">
+    <file>icon/提醒.png</file>
+    <file>icon/documents.png</file>
+    <file>icon/all-inclusive.png</file>
+    <file>icon/disk.png</file>
+    <file>icon/doc.png</file>
+    <file>icon/docx.png</file>
+    <file>icon/github (2).png</file>
+    <file>icon/logo.ico</file>
+    <file>icon/pdf.png</file>
+    <file>icon/planning.png</file>
+    <file>icon/ppt.png</file>
+    <file>icon/pptx.png</file>
+    <file>icon/settings (1).png</file>
+    <file>icon/sysfile.png</file>
+    <file>icon/txt.png</file>
+    <file>icon/working.png</file>
+    <file>icon/xls.png</file>
+    <file>icon/xlsx.png</file>
+    <file>icon/zoom-in (1).png</file>
+    <file>icon/zoom-out.png</file>
+  </qresource>
+</RCC>

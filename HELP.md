@@ -25,16 +25,16 @@
 
 ## 界面预览
 
-![预览图](https://pic.imgdb.cn/item/637cd07b16f2c2beb17378f1.png) 
+![预览图](./icon/Snipaste_2022-11-22_20-41-48.png) 
 
-![预览图](https://pic.imgdb.cn/item/637cd07b16f2c2beb17378eb.png)  
+![预览图](./icon/Snipaste_2022-11-22_20-45-59.png)  
 
-![预览图](https://pic.imgdb.cn/item/637cd07b16f2c2beb17378f1.png)  
+![预览图](./icon/Snipaste_2022-11-22_21-32-19.png)  
 
 
 
 ## 文件下载
 
-* [绿色版](https://gaoyongxian.lanzouy.com/i7uMC0gmwp1c)  
-* [安装包](https://gaoyongxian.lanzouy.com/iQHHP0gmwrng)  
+* 绿色版：  
+* 安装包：  
 
