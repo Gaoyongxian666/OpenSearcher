@@ -97,9 +97,11 @@ class QTextFrame(QFrame):
             if Loading:
                 self.search_running = True
                 self.child.keywords.setText(Keywords)
+                self.child.preview.clear()
                 self.HighLight = KeywordsHighlighter(parent=self.child.preview.document(),
                                                      keywords=self.child.keywords.text(),
                                                      cursors=self.cursors)
+
                 self.load_text_thread = LoadTextThread(FilePath=FilePath, CurPath=CurPath, IsError=IsError)
                 self.load_text_thread.complete.connect(self.SearchComplete)
                 self.load_text_thread.start()
