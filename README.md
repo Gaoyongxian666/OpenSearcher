@@ -68,6 +68,6 @@
 
 ## 文件下载
 
-* [绿色版](https://gaoyongxian.lanzouy.com/i7uMC0gmwp1c)  
-* [安装包](https://gaoyongxian.lanzouy.com/iQHHP0gmwrng)  
+* [绿色版](https://gaoyongxian.lanzouy.com/inhpv0gs1bgd)  
+* [安装包](https://gaoyongxian.lanzouy.com/inb1Q0gs1cra)  
 
