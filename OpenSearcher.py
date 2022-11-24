@@ -485,7 +485,7 @@ def main():
 
     Name = "Open Searcher"
     KeyName = "OpenSearcher"
-    Version = "0.0.2"
+    Version = "0.0.3"
     UpdateUrl = "https://aidcs-1256440297.cos.ap-beijing.myqcloud.com/OpenSearcher/update.txt"
     ExePath = sys.argv[0]
     CurPath = os.path.dirname(os.path.abspath(ExePath))
