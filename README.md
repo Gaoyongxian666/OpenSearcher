@@ -77,6 +77,6 @@
 ## 文件下载
 
 * 0.0.3
-* [绿色版](https://gaoyongxian.lanzouy.com/ikRmR0gsuqwd)  
-* [安装包](https://gaoyongxian.lanzouy.com/ireKa0gsustc)  
+* [绿色版](https://gaoyongxian.lanzouy.com/iZXJE0gt1n3i)  
+* [安装包](https://gaoyongxian.lanzouy.com/iE3MQ0gt1ssd)  
 
