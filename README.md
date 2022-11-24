@@ -39,6 +39,8 @@
 <br />
 
 ## 更新日志
+* 0.0.3
+  * 2022.11.24 修改部分bug。
 * 0.0.2
   * 2022.11.24 完善了一下代码，感谢坛友 @会飞的花 提出的建议：添加了记录字号、字体、换行、行号、上次搜索目录功能。 
 * 0.0.1
@@ -74,7 +76,7 @@
 
 ## 文件下载
 
-* 0.0.2
+* 0.0.3
 * [绿色版](https://gaoyongxian.lanzouy.com/ikRmR0gsuqwd)  
 * [安装包](https://gaoyongxian.lanzouy.com/ireKa0gsustc)  
 
