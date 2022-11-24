@@ -46,6 +46,12 @@
 
 <br />
 
+## 开发环境
+
+```pip install -r requirements.txt```
+
+<br />
+
 ## 界面预览
 
 ![预览图](./icon/Snipaste_2022-11-22_20-41-48.png) 
