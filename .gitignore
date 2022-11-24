@@ -136,3 +136,4 @@ logs
 .errortemp
 .temp
 .idea
+!requirements.txt

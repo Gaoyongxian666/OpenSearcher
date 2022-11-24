@@ -1,0 +1,17 @@
+altgraph==0.17.3
+chardet==5.0.0
+docx2txt==0.8
+future==0.18.2
+pefile==2022.5.30
+Pillow==9.3.0
+psutil==5.9.4
+pyinstaller==5.6.2
+pyinstaller-hooks-contrib==2022.13
+PyQt5==5.15.7
+PyQt5-Qt5==5.15.2
+PyQt5-sip==12.11.0
+pywin10==0.0.3
+pywin32==305
+pywin32-ctypes==0.2.0
+sqlitedict==2.0.0
+winshell==0.6

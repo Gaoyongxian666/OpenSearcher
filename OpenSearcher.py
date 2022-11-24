@@ -118,6 +118,7 @@ class MainWindow(QMainWindow):
     '''-----------------------------------主窗体-----------------------------------------------'''
 
     def onClickedZoomIn(self):
+        # 放大
         self.ui.textframe.zoomIn(1)
 
     def onClickedZoomOut(self):
@@ -170,7 +171,7 @@ class MainWindow(QMainWindow):
             self.isMax = False
         # 执行顺序不能颠倒
         self.showMinimized()
-        self.setWindowFlags(QtCore.Qt.SplashScreen)
+        self.setWindowFlags(QtCore.Qt.SplashScreen | QtCore.Qt.FramelessWindowHint)
 
     '''-----------------------------------初始化-----------------------------------------------'''
 
@@ -213,12 +214,17 @@ class MainWindow(QMainWindow):
         """耗时操作"""
         self.ui.frame.setEnabled(False)
         self.relay_thread = RelayUpdateThread(self.queue, self.socket, self.CurPath, self.SettingPath)
-        self.relay_thread.update_setting.connect(self.UpdateSetting)
-        self.relay_thread.update_dir.connect(self.UpdateDir)
-
+        self.relay_thread.update_setting.connect(self.InitSetting)
+        self.relay_thread.update_dir.connect(self.InitDir)
+        self.relay_thread.update_textframe.connect(self.InitTextFrame)
+        self.relay_thread.complete.connect(self.InitComplete)
         self.relay_thread.start()
 
-    def UpdateDir(self, dir):
+    def InitTextFrame(self, content):
+        self.ui.textframe.Init(fontsize=content[0], fontfamily=content[1], linewrap=content[2], linenumber=content[3],
+                               mysetting_dict=self.mysetting_dict)
+
+    def InitDir(self, dir):
         self.ui.file_edit.setText(dir)
         if self.isMinimized() or not self.isVisible():
             self.setWindowFlags(QtCore.Qt.Window)
@@ -228,13 +234,16 @@ class MainWindow(QMainWindow):
             else:
                 self.showNormal()
 
-    def UpdateSetting(self, mylist):
-        self._auto_run = mylist[0]
-        self._right_click_menu = mylist[1]
-        self._remind = mylist[2]
-        self._show_all = mylist[3]
-        self._limit_file_size = mylist[4]
-        self.mysetting_dict = mylist[5]
+    def InitSetting(self, setting):
+        self.mysetting_dict = setting
+        self._auto_run = self.mysetting_dict['_auto_run']
+        self._last_dir = self.mysetting_dict['_last_dir']
+        self._right_click_menu = self.mysetting_dict['_right_click_menu']
+        self._remind = self.mysetting_dict['_remind']
+        self._show_all = self.mysetting_dict['_show_all']
+        self._limit_file_size = self.mysetting_dict['_limit_file_size']
+
+    def InitComplete(self):
         self.ui.frame.setEnabled(True)
 
     def SearchShowUi(self):
@@ -273,10 +282,10 @@ class MainWindow(QMainWindow):
     def restart_real_live(self):
         """ 进程控制实现自动重启"""
         qApp.quit()
-        # QProcess 类的作用是启动一个外部的程序并与之交互，并且没有父子关系。
-        p = QProcess
-        # applicationFilePath() 返回应用程序可执行文件的文件路径
-        p.startDetached(qApp.applicationFilePath())
+        self.p = QProcess
+        print(qApp.applicationFilePath())
+        print(sys.executable, sys.argv)
+        s = self.p.startDetached(sys.executable, sys.argv)
 
     def onClickedShow(self):
         if self.isMinimized() or not self.isVisible():
@@ -289,10 +298,11 @@ class MainWindow(QMainWindow):
         else:
             if self.isMaximized():
                 self.isMax = True
-            self.setWindowFlags(QtCore.Qt.SplashScreen)
-            self.showMinimized()
+
+            self.close()
 
     def onClickedExit(self):
+        self.setVisible(False)  # 托盘图标会自动消失
         QApplication.instance().quit()
         sys.exit(0)
 
@@ -379,6 +389,7 @@ class MainWindow(QMainWindow):
             else:
                 self.SearchShowUi()
                 self.search_running = True
+                self.mysetting_dict["_search_dir"]=self.search_dirname
                 self.logger.info("开启搜索线程")
                 self.logger.info("搜索类型：" + str(self.screen))
                 self.logger.info("搜索目录：" + self.search_dirname)
@@ -399,8 +410,10 @@ class MainWindow(QMainWindow):
 
 
 class RelayUpdateThread(QThread):
-    update_setting = pyqtSignal(list)
+    update_setting = pyqtSignal(SqliteDict)
     update_dir = pyqtSignal(str)
+    update_textframe = pyqtSignal(list)
+    complete = pyqtSignal()
 
     def __init__(self, queue, socket, CurPath, SettingPath):
         super().__init__()
@@ -411,10 +424,23 @@ class RelayUpdateThread(QThread):
 
     def run(self):
         self.setting()
+        self.init_textframe()
+        if self.mysetting_dict["_last_dir"]:
+            self.update_dir.emit(self.mysetting_dict["_search_dir"])
+
+        self.complete.emit()
         while True:
             data, addr = self.socket.recvfrom(1024)
             dir_path = data.decode("utf-8")
             self.update_dir.emit(dir_path)
+
+    def init_textframe(self):
+        self.update_textframe.emit([
+            self.mysetting_dict['_fontsize'],
+            self.mysetting_dict['_fontfamily'],
+            self.mysetting_dict['_linewrap'],
+            self.mysetting_dict['_linenumber'],
+        ])
 
     def setting(self):
         if not os.path.exists(self.SettingPath):
@@ -422,23 +448,22 @@ class RelayUpdateThread(QThread):
             self.mysetting_dict = SqliteDict(self.SettingPath, autocommit=True)
             self.mysetting_dict.clear()
             self.mysetting_dict['_auto_run'] = True
+            self.mysetting_dict['_last_dir'] = True
+            self.mysetting_dict['_search_dir'] = ""
             self.mysetting_dict['_right_click_menu'] = True
             self.mysetting_dict['_remind'] = True
             self.mysetting_dict['_show_all'] = False
             self.mysetting_dict['_limit_file_size'] = 100
-            self.update_setting.emit([True, True, True, False, 100, self.mysetting_dict])
+            self.mysetting_dict['_fontsize'] = 10
+            self.mysetting_dict['_fontfamily'] = "宋体"
+            self.mysetting_dict['_linewrap'] = True
+            self.mysetting_dict['_linenumber'] = True
+            self.update_setting.emit(self.mysetting_dict)
             self.init_auto()
             self.init_right_click()
         else:
             self.mysetting_dict = SqliteDict(self.SettingPath, autocommit=True)
-            self.update_setting.emit([
-                self.mysetting_dict['_auto_run'],
-                self.mysetting_dict['_right_click_menu'],
-                self.mysetting_dict['_remind'],
-                self.mysetting_dict['_show_all'],
-                self.mysetting_dict['_limit_file_size'],
-                self.mysetting_dict
-            ])
+            self.update_setting.emit(self.mysetting_dict)
 
     def init_auto(self):
         name = 'OpenSearcher'
@@ -460,7 +485,7 @@ def main():
 
     Name = "Open Searcher"
     KeyName = "OpenSearcher"
-    Version = "0.0.1"
+    Version = "0.0.2"
     UpdateUrl = "https://aidcs-1256440297.cos.ap-beijing.myqcloud.com/OpenSearcher/update.txt"
     ExePath = sys.argv[0]
     CurPath = os.path.dirname(os.path.abspath(ExePath))

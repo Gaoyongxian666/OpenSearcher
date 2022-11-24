@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Open Searcher"
-#define MyAppVersion "0.0.1"
+#define MyAppVersion "0.0.2"
 #define MyAppPublisher "Gaoyongxian"
 #define MyAppURL "https://github.com/Gaoyongxian666/OpenSearcher"
 #define MyAppExeName "OpenSearcher.exe"

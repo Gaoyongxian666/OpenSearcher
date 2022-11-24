@@ -25,48 +25,48 @@ class SettingWindow(QMainWindow):
         self.child.checkBox_show_all.setChecked(self.mysetting_dict["_show_all"])
         self.child.checkBox_auto_run.setChecked(self.mysetting_dict["_auto_run"])
         self.child.checkBox_remind.setChecked(self.mysetting_dict["_remind"])
+        self.child.checkBox_last_dir.setChecked(self.mysetting_dict["_last_dir"])
 
         self.child.button_fix.clicked.connect(self.right_click_fix)
         self.child.button_del.clicked.connect(self.right_click_del)
         self.child.checkBox_auto_run.stateChanged.connect(self.checkBox_auto_run)
         self.child.checkBox_show_all.stateChanged.connect(self.checkBox_show_all)
         self.child.checkBox_remind.stateChanged.connect(self.checkBox_remind)
+        self.child.checkBox_last_dir.stateChanged.connect(self.checkBox_last_dir)
         self.child.spinBox_limit_file_size.valueChanged.connect(self.spinBox_limit_file_size)
 
     def checkBox_auto_run(self):
         name = 'Y Searcher'
-        # path = os.path.abspath(os.path.join(self.CurPath, "YSearcher.exe"))
         path = sys.argv[0]
         KeyName = r"SOFTWARE\Microsoft\Windows\CurrentVersion\Run"
         key = win32api.RegOpenKey(win32con.HKEY_CURRENT_USER, KeyName, 0, win32con.KEY_ALL_ACCESS)
         if self.child.checkBox_auto_run.isChecked():
-            self.parent_window._auto_run = True
-            self.mysetting_dict["_auto_run"] = True
             win32api.RegSetValueEx(key, name, 0, win32con.REG_SZ, path)
             print('开启软件自启动')
         else:
             self.parent_window._auto_run = False
-            self.mysetting_dict["_auto_run"] = False
             win32api.RegDeleteValue(key, name)
             print('关闭软件自启动')
+        self.mysetting_dict["_auto_run"] = self.child.checkBox_auto_run.isChecked()
         win32api.RegCloseKey(key)
 
     def checkBox_show_all(self):
         if self.child.checkBox_show_all.isChecked():
             self.parent_window._show_all = True
-            self.mysetting_dict["_show_all"] = True
         else:
             self.parent_window._show_all = False
-            self.mysetting_dict["_show_all"] = False
             self.queue.put(("_show_all", 0))
+        self.mysetting_dict["_show_all"] = self.child.checkBox_show_all.isChecked()
+
+    def checkBox_last_dir(self):
+        self.mysetting_dict["_last_dir"] = self.child.checkBox_last_dir.isChecked()
 
     def checkBox_remind(self):
         if self.child.checkBox_remind.isChecked():
             self.parent_window._remind = True
-            self.mysetting_dict["_remind"] = True
         else:
             self.parent_window._remind = False
-            self.mysetting_dict["_remind"] = False
+        self.mysetting_dict["_remind"] = self.child.checkBox_remind.isChecked()
 
     def spinBox_limit_file_size(self):
         _limit_file_size = self.child.spinBox_limit_file_size.value()

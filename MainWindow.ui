@@ -152,18 +152,23 @@ QPushButton:hover {
               <number>1</number>
              </property>
              <item>
-              <widget class="QPushButton" name="show_all_button">
+              <widget class="QToolButton" name="show_all_button">
                <property name="minimumSize">
                 <size>
-                 <width>40</width>
-                 <height>40</height>
+                 <width>60</width>
+                 <height>60</height>
                 </size>
                </property>
                <property name="maximumSize">
                 <size>
-                 <width>45</width>
-                 <height>45</height>
+                 <width>60</width>
+                 <height>60</height>
                 </size>
+               </property>
+               <property name="font">
+                <font>
+                 <pointsize>9</pointsize>
+                </font>
                </property>
                <property name="toolTip">
                 <string>显示全部</string>
@@ -172,7 +177,7 @@ QPushButton:hover {
                 <number>1000</number>
                </property>
                <property name="text">
-                <string/>
+                <string>显示全部</string>
                </property>
                <property name="icon">
                 <iconset resource="icon.qrc">
@@ -184,20 +189,23 @@ QPushButton:hover {
                  <height>36</height>
                 </size>
                </property>
+               <property name="toolButtonStyle">
+                <enum>Qt::ToolButtonTextUnderIcon</enum>
+               </property>
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="help">
+              <widget class="QToolButton" name="help">
                <property name="minimumSize">
                 <size>
-                 <width>40</width>
-                 <height>40</height>
+                 <width>60</width>
+                 <height>60</height>
                 </size>
                </property>
                <property name="maximumSize">
                 <size>
-                 <width>45</width>
-                 <height>45</height>
+                 <width>60</width>
+                 <height>60</height>
                 </size>
                </property>
                <property name="toolTip">
@@ -207,7 +215,7 @@ QPushButton:hover {
                 <number>1000</number>
                </property>
                <property name="text">
-                <string/>
+                <string>使用说明</string>
                </property>
                <property name="icon">
                 <iconset resource="icon.qrc">
@@ -219,20 +227,23 @@ QPushButton:hover {
                  <height>33</height>
                 </size>
                </property>
+               <property name="toolButtonStyle">
+                <enum>Qt::ToolButtonTextUnderIcon</enum>
+               </property>
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="setting">
+              <widget class="QToolButton" name="setting">
                <property name="minimumSize">
                 <size>
-                 <width>40</width>
-                 <height>40</height>
+                 <width>60</width>
+                 <height>60</height>
                 </size>
                </property>
                <property name="maximumSize">
                 <size>
-                 <width>45</width>
-                 <height>45</height>
+                 <width>60</width>
+                 <height>60</height>
                 </size>
                </property>
                <property name="toolTip">
@@ -242,7 +253,7 @@ QPushButton:hover {
                 <number>1000</number>
                </property>
                <property name="text">
-                <string/>
+                <string>软件设置</string>
                </property>
                <property name="icon">
                 <iconset resource="icon.qrc">
@@ -254,20 +265,23 @@ QPushButton:hover {
                  <height>33</height>
                 </size>
                </property>
+               <property name="toolButtonStyle">
+                <enum>Qt::ToolButtonTextUnderIcon</enum>
+               </property>
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="update">
+              <widget class="QToolButton" name="update">
                <property name="minimumSize">
                 <size>
-                 <width>40</width>
-                 <height>40</height>
+                 <width>60</width>
+                 <height>60</height>
                 </size>
                </property>
                <property name="maximumSize">
                 <size>
-                 <width>45</width>
-                 <height>45</height>
+                 <width>60</width>
+                 <height>60</height>
                 </size>
                </property>
                <property name="toolTip">
@@ -277,7 +291,7 @@ QPushButton:hover {
                 <number>1000</number>
                </property>
                <property name="text">
-                <string/>
+                <string>检查更新</string>
                </property>
                <property name="icon">
                 <iconset resource="icon.qrc">
@@ -288,6 +302,9 @@ QPushButton:hover {
                  <width>35</width>
                  <height>35</height>
                 </size>
+               </property>
+               <property name="toolButtonStyle">
+                <enum>Qt::ToolButtonTextUnderIcon</enum>
                </property>
               </widget>
              </item>
@@ -308,17 +325,17 @@ QPushButton:hover {
               </spacer>
              </item>
              <item>
-              <widget class="QPushButton" name="index_button">
+              <widget class="QToolButton" name="index_button">
                <property name="minimumSize">
                 <size>
-                 <width>40</width>
-                 <height>40</height>
+                 <width>60</width>
+                 <height>60</height>
                 </size>
                </property>
                <property name="maximumSize">
                 <size>
-                 <width>45</width>
-                 <height>45</height>
+                 <width>60</width>
+                 <height>60</height>
                 </size>
                </property>
                <property name="toolTip">
@@ -328,7 +345,7 @@ QPushButton:hover {
                 <number>1000</number>
                </property>
                <property name="text">
-                <string/>
+                <string>建立索引</string>
                </property>
                <property name="icon">
                 <iconset resource="icon.qrc">
@@ -340,20 +357,23 @@ QPushButton:hover {
                  <height>33</height>
                 </size>
                </property>
+               <property name="toolButtonStyle">
+                <enum>Qt::ToolButtonTextUnderIcon</enum>
+               </property>
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="text_scale_up">
+              <widget class="QToolButton" name="text_scale_up">
                <property name="minimumSize">
                 <size>
-                 <width>40</width>
-                 <height>40</height>
+                 <width>60</width>
+                 <height>60</height>
                 </size>
                </property>
                <property name="maximumSize">
                 <size>
-                 <width>45</width>
-                 <height>45</height>
+                 <width>60</width>
+                 <height>60</height>
                 </size>
                </property>
                <property name="toolTip">
@@ -366,7 +386,7 @@ QPushButton:hover {
                 <string notr="true"/>
                </property>
                <property name="text">
-                <string/>
+                <string>放大</string>
                </property>
                <property name="icon">
                 <iconset resource="icon.qrc">
@@ -378,10 +398,13 @@ QPushButton:hover {
                  <height>34</height>
                 </size>
                </property>
+               <property name="toolButtonStyle">
+                <enum>Qt::ToolButtonTextUnderIcon</enum>
+               </property>
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="text_scale_down">
+              <widget class="QToolButton" name="text_scale_down">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                  <horstretch>0</horstretch>
@@ -390,14 +413,14 @@ QPushButton:hover {
                </property>
                <property name="minimumSize">
                 <size>
-                 <width>40</width>
-                 <height>40</height>
+                 <width>60</width>
+                 <height>60</height>
                 </size>
                </property>
                <property name="maximumSize">
                 <size>
-                 <width>45</width>
-                 <height>45</height>
+                 <width>60</width>
+                 <height>60</height>
                 </size>
                </property>
                <property name="toolTip">
@@ -410,7 +433,7 @@ QPushButton:hover {
                 <string notr="true"/>
                </property>
                <property name="text">
-                <string/>
+                <string>缩小</string>
                </property>
                <property name="icon">
                 <iconset resource="icon.qrc">
@@ -431,14 +454,8 @@ QPushButton:hover {
                <property name="checked">
                 <bool>false</bool>
                </property>
-               <property name="autoDefault">
-                <bool>false</bool>
-               </property>
-               <property name="default">
-                <bool>false</bool>
-               </property>
-               <property name="flat">
-                <bool>false</bool>
+               <property name="toolButtonStyle">
+                <enum>Qt::ToolButtonTextUnderIcon</enum>
                </property>
               </widget>
              </item>
