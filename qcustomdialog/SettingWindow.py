@@ -36,7 +36,7 @@ class SettingWindow(QMainWindow):
         self.child.spinBox_limit_file_size.valueChanged.connect(self.spinBox_limit_file_size)
 
     def checkBox_auto_run(self):
-        name = 'Y Searcher'
+        name = 'OpenSearcher'
         path = sys.argv[0]
         KeyName = r"SOFTWARE\Microsoft\Windows\CurrentVersion\Run"
         key = win32api.RegOpenKey(win32con.HKEY_CURRENT_USER, KeyName, 0, win32con.KEY_ALL_ACCESS)
