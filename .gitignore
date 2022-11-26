@@ -130,7 +130,6 @@ dmypy.json
 
 
 *.db
-*.txt
 pack
 logs
 .errortemp
@@ -138,3 +137,4 @@ logs
 .idea
 !requirements.txt
 !antiword/
+/*.txt
