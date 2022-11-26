@@ -137,4 +137,4 @@ logs
 .temp
 .idea
 !requirements.txt
-!antiword
+!antiword/
