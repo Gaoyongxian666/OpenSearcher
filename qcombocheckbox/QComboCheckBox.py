@@ -21,6 +21,8 @@ class QComboCheckBox(QComboBox):
         self.qLineEdit = QLineEdit()
         self.qLineEdit.setReadOnly(True)
         self.qListWidget = QListWidget()
+        self.qListWidget.setSizeAdjustPolicy(QListWidget.AdjustToContents)
+
         self.addQCheckBox(0)
         self.qCheckBox[0].stateChanged.connect(self.All)
         for i in range(1, self.row_num):
@@ -95,6 +97,7 @@ if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     Form = QtWidgets.QWidget()
     comboBox1 = QComboCheckBox(Form)
+
     items = ["Microsoft Word 97-2003 文件（.doc）",
              "Microsoft Word 文件（.docx）",
              "Microsoft Excel 97-2003 文件（.xls）",

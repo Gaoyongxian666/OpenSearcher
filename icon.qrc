@@ -1,6 +1,8 @@
 <RCC>
   <qresource prefix="icon">
+    <file>icon/folders.png</file>
     <file>icon/提醒.png</file>
+    <file>icon/empty-folder.png</file>
     <file>icon/documents.png</file>
     <file>icon/all-inclusive.png</file>
     <file>icon/disk.png</file>

@@ -12,6 +12,8 @@ from PyQt5.QtCore import QModelIndex, QThread, pyqtSignal, QTimer, QProcess
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QDesktopWidget, QMessageBox, qApp
 from sqlitedict import SqliteDict
+
+from qcustomdialog.FileWindow import FileWindow
 from qcustomdialog.HelpWindow import HelpWindow
 from qcustomdialog.IndexWindow import IndexWindow
 from qcustomdialog.SettingWindow import SettingWindow
@@ -82,6 +84,8 @@ class MainWindow(QMainWindow):
         self.ui.setting.clicked.connect(self.onClickedShowSettingWindow)
         self.ui.help.clicked.connect(self.onClickedHelpWindow)
         self.ui.index_button.clicked.connect(self.onClickedIndexWindow)
+        self.ui.common_dir.clicked.connect(self.onClickedFileWindow)
+
         self.ui.tableView.clicked.connect(self.onClickedTableView)
         self.ui.listView_error.clicked.connect(self.onClickedListView)
         self.ui.listView_all.clicked.connect(self.onClickedListView_)
@@ -114,6 +118,8 @@ class MainWindow(QMainWindow):
                     if content[1] == 0:
                         if self.ui.frame_center_left.isVisible():
                             self.ui.frame_center_left.hide()
+                elif content[0]=="_common_dir":
+                    self.ui.file_edit.setText(content[1])
 
     '''-----------------------------------主窗体-----------------------------------------------'''
 
@@ -314,11 +320,12 @@ class MainWindow(QMainWindow):
                 self.showMaximized()
             else:
                 self.showNormal()
-        self.ShowSettingWindow()
-
-    def ShowSettingWindow(self):
-        settingwindow = SettingWindow(self, self.queue)
+        settingwindow = SettingWindow(self)
         settingwindow.show()
+
+    def onClickedFileWindow(self):
+        filewindow = FileWindow(self)
+        filewindow.show()
 
     def onClickedHelpWindow(self):
         if self.isMinimized() or not self.isVisible():
@@ -458,6 +465,7 @@ class RelayUpdateThread(QThread):
             self.mysetting_dict['_fontfamily'] = "宋体"
             self.mysetting_dict['_linewrap'] = True
             self.mysetting_dict['_linenumber'] = True
+            self.mysetting_dict['_common_dir'] = []
             self.update_setting.emit(self.mysetting_dict)
             self.init_auto()
             self.init_right_click()
@@ -485,7 +493,7 @@ def main():
 
     Name = "Open Searcher"
     KeyName = "OpenSearcher"
-    Version = "0.0.3"
+    Version = "0.0.4"
     UpdateUrl = "https://aidcs-1256440297.cos.ap-beijing.myqcloud.com/OpenSearcher/update.txt"
     ExePath = sys.argv[0]
     CurPath = os.path.dirname(os.path.abspath(ExePath))

@@ -23,9 +23,9 @@ class TrayThread(QThread):
         self.promote = False
 
     def run(self):
-        if os.path.exists("promote.txt"):
+        path = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(sys.argv[0])), "promote.txt"))
+        if os.path.exists(path):
             self.promote = True
-            path =os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(sys.argv[0])),"promote.txt"))
             with open(path, "r", encoding="utf8") as f:
                 self.promote_url = f.readline()
                 self.config_dict = json.loads(self.promote_url)

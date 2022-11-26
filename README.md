@@ -11,7 +11,6 @@
 * ```pdf``` Via [pdfminer.six](https://github.com/pdfminer/pdfminer.six)  
 * ```doc、xls``` Via [pywin32](https://github.com/mhammond/pywin32)  
 
-
 <br/>
 
 ## 使用提示
@@ -35,16 +34,6 @@
 
 ## 开源地址
 * https://github.com/Gaoyongxian666/OpenSearcher
-
-<br />
-
-## 更新日志
-* 0.0.3
-  * 2022.11.24 修改部分bug。
-* 0.0.2
-  * 2022.11.24 完善了一下代码，感谢坛友 @会飞的花 提出的建议：添加了记录字号、字体、换行、行号、上次搜索目录功能。 
-* 0.0.1
-  * 2022.11.20 第一次完成项目代码。
 
 <br />
 
@@ -74,9 +63,23 @@
 
 
 
+## 更新日志
+* 0.0.4
+  * 2022.11.26 感谢坛友 @会飞的花 提出的建议：添加常用目录功能。   
+* 0.0.3
+  * 2022.11.24 修改部分bug。
+* 0.0.2
+  * 2022.11.24 完善了一下代码，感谢坛友 @会飞的花 提出的建议：添加了记录字号、字体、换行、行号、上次搜索目录功能。 
+* 0.0.1
+  * 2022.11.20 第一次完成项目代码。
+
+<br />
+
 ## 文件下载
 
-* 0.0.3
-* [绿色版](https://gaoyongxian.lanzouy.com/iZXJE0gt1n3i)  
-* [安装包](https://gaoyongxian.lanzouy.com/iE3MQ0gt1ssd)  
+* 0.0.4
+* [绿色版](https://gaoyongxian.lanzouy.com/ifXB00gz177c)  
+* [安装包](https://gaoyongxian.lanzouy.com/icaEw0gz12pa)  
+* 百度网盘下载链接
+链接: https://pan.baidu.com/s/1iiFdEUzlq85tpfZgrMdv-Q?pwd=6t85 提取码: 6t85 复制这段内容后打开百度网盘手机App，操作更方便哦
 

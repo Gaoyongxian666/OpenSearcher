@@ -195,6 +195,38 @@ QPushButton:hover {
               </widget>
              </item>
              <item>
+              <widget class="QToolButton" name="common_dir">
+               <property name="minimumSize">
+                <size>
+                 <width>60</width>
+                 <height>60</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>60</width>
+                 <height>60</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>常用目录</string>
+               </property>
+               <property name="icon">
+                <iconset resource="icon.qrc">
+                 <normaloff>:/icon/icon/folders.png</normaloff>:/icon/icon/folders.png</iconset>
+               </property>
+               <property name="iconSize">
+                <size>
+                 <width>33</width>
+                 <height>33</height>
+                </size>
+               </property>
+               <property name="toolButtonStyle">
+                <enum>Qt::ToolButtonTextUnderIcon</enum>
+               </property>
+              </widget>
+             </item>
+             <item>
               <widget class="QToolButton" name="help">
                <property name="minimumSize">
                 <size>

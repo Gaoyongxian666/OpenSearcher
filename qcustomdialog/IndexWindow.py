@@ -9,7 +9,7 @@ from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 from PyQt5.QtWidgets import QMainWindow, QMessageBox
 
 from qcustomdialog import index
-from qutils.util import file_name_list, xls2txt, xlsx2txt, get_text
+from qutils.util import file_name_list, get_text
 
 
 class IndexWindow(QMainWindow):

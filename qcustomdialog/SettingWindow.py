@@ -7,10 +7,10 @@ from qutils.util import is_user_admin, run_as_admin, create_right_menu, remove_r
 
 
 class SettingWindow(QMainWindow):
-    def __init__(self, parent_window=None, queue=None):
+    def __init__(self, parent_window=None):
         super().__init__(parent_window)
         self.mysetting_dict = parent_window.mysetting_dict
-        self.queue = queue
+        self.queue = parent_window.queue
         self.parent_window = parent_window
         self.CurPath = parent_window.CurPath
 
@@ -38,6 +38,7 @@ class SettingWindow(QMainWindow):
     def checkBox_auto_run(self):
         name = 'OpenSearcher'
         path = sys.argv[0]
+        print(path)
         KeyName = r"SOFTWARE\Microsoft\Windows\CurrentVersion\Run"
         key = win32api.RegOpenKey(win32con.HKEY_CURRENT_USER, KeyName, 0, win32con.KEY_ALL_ACCESS)
         if self.child.checkBox_auto_run.isChecked():

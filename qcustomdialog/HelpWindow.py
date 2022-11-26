@@ -1,3 +1,6 @@
+import os.path
+import sys
+
 from PyQt5.QtCore import QThread, pyqtSignal
 from PyQt5.QtWidgets import QMainWindow, QFileDialog
 from qcustomdialog import help
@@ -38,6 +41,21 @@ class RelayUpdateThread(QThread):
         self.filepath = filepath
 
     def run(self):
-        with open(self.filepath, encoding='utf-8') as f:
-            self.text = f.read()
-            self.complete.emit(self.text)
+        try:
+            with open(self.filepath, encoding='utf-8') as f:
+                text_list = f.readlines()
+                DirPath = os.path.abspath(os.path.dirname(os.path.abspath(sys.argv[0])))
+                txt = ""
+                for paragraph_text in text_list:
+                    if "(./" in paragraph_text:
+                        paragraph_text_list = paragraph_text.split("(./")
+                    elif "(.\\" in paragraph_text:
+                        paragraph_text_list = paragraph_text.split("(.\\")
+                    icon_path = os.path.abspath(os.path.join(DirPath, paragraph_text_list[-1].strip().strip(")")))
+                    paragraph_text = paragraph_text_list[0] + "(\"" + icon_path + "\")"
+                    txt = "".join((txt, paragraph_text, "\n"))
+        except:
+            with open(self.filepath, encoding='utf-8') as f:
+                txt = f.read()
+        print(txt)
+        self.complete.emit(txt)
