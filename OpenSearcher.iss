@@ -3,7 +3,7 @@
 
 #define MyAppName "OpenSearcher"
 #define MyDesktopAppName "Open Searcher"
-#define MyAppVersion "0.0.4"
+#define MyAppVersion "0.0.5"
 #define MyAppPublisher "Gaoyongxian"
 #define MyAppURL "https://github.com/Gaoyongxian666/OpenSearcher"
 #define MyAppExeName "OpenSearcher.exe"
@@ -23,7 +23,7 @@ DefaultDirName={userdocs}/{#MyAppName}/{#MyAppVersion}
 DisableProgramGroupPage=yes
 ; Uncomment the following line to run in non administrative install mode (install for current user only.)
 ;PrivilegesRequired=lowest
-OutputDir=C:\Users\Gaoyongxian\Desktop
+OutputDir=C:\Users\Gaoyongxian\Documents\GitHub\OpenSearcher\pack\dist
 OutputBaseFilename=OpenSearcher_{#MyAppVersion}
 SetupIconFile=C:\Users\Gaoyongxian\Documents\GitHub\OpenSearcher\icon\logo.ico
 Compression=lzma

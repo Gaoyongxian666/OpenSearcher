@@ -88,6 +88,9 @@ class TrayThread(QThread):
     def restart__(self):
         self.restart.emit()
 
+    def OnDestroy(self):
+        self.t.OnDestroy(0, 0, 0, 0)
+
     def show__(self):
         self.show.emit()
 

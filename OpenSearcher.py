@@ -4,11 +4,13 @@ import socket
 import sys
 import traceback
 from queue import Queue
+
+import pythoncom
 import win32api
 import win32con
 import winshell
 from PyQt5 import QtCore
-from PyQt5.QtCore import QModelIndex, QThread, pyqtSignal, QTimer, QProcess
+from PyQt5.QtCore import QModelIndex, QThread, pyqtSignal, QTimer, QProcess, QSettings
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QDesktopWidget, QMessageBox, qApp
 from sqlitedict import SqliteDict
@@ -24,24 +26,33 @@ from qutils.traythread import TrayThread
 import logging
 from qutils.util import is_user_admin, run_as_admin, create_right_menu, remove_right_menu, create_shortcut
 
+logger = logging.getLogger(__name__)
+
 
 class MainWindow(QMainWindow):
-    def __init__(self, icon, title, version, update_url, socket, CurPath, dir_path):
+    def __init__(self, icon, title, Version, UpdateUrl, socket, CurPath, DirPath, Name_, Name, LogoPath, ExePath):
         super().__init__()
         self.icon = icon
         self.title = title
-        self.version = version
-        self.update_url = update_url
-        self.CurPath = CurPath
+        self.Version = Version
         self.socket = socket
-        self.dir_path = dir_path
+        self.UpdateUrl = UpdateUrl
+        self.CurPath = CurPath
+        self.DirPath = DirPath
+        self.Name_ = Name_
+        self.Name = Name
+        self.LogoPath = LogoPath
+        self.ExePath = ExePath
 
+        self.IconDir = os.path.abspath(os.path.join(self.CurPath, "icon"))
         self.LogPath = os.path.abspath(os.path.join(self.CurPath, "logs"))
         self.HelpPath = os.path.abspath(os.path.join(self.CurPath, 'HELP.md'))
         self.SettingPath = os.path.abspath(os.path.join(self.CurPath, 'setting.db'))
         self.TempPath = os.path.abspath(os.path.join(self.CurPath, '.temp'))
         self.ErrorTempPath = os.path.abspath(os.path.join(self.CurPath, '.errortemp'))
-        self.IconPath = os.path.abspath(os.path.join(self.CurPath, "icon"))
+        self.LnkPath = os.path.abspath(os.path.join(winshell.desktop(), self.Name_ + ".lnk"))
+        self.LnkPath2 = os.path.abspath(os.path.join(winshell.common_desktop(), self.Name_ + ".lnk"))
+        self.settings = QSettings(os.path.abspath(os.path.join(self.CurPath, 'settings.ini')), QSettings.IniFormat)
 
         self.isMax = False
         self.search_running = False
@@ -49,50 +60,12 @@ class MainWindow(QMainWindow):
 
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        self.__init2__()
-        self.InitComboBox()
-        self.SetTrayIcon()
+        self.Init()
+        self.InitTrayIcon()
         self.InitLogger()
-        self.RelayUpdate()
-
-    def __init2__(self):
-        if self.dir_path is not None:
-            print("参数启动")
-            self.ui.file_edit.setText(self.dir_path)
-
-        # 控件初始化
-        self.ui.textframe.setReadOnly(True)
-        self.ui.file_edit.setReadOnly(True)
-        self.ui.frame_center_left.hide()
-        self.ui.progressBar.stop()
-        self.ui.progressBar.hide()
-
-        self.ui.tableView.setColumnWidth(0, 200)
-        self.ui.tableView.setColumnWidth(1, 75)
-        self.ui.tableView.setColumnWidth(2, 150)
-        self.ui.tableView.setColumnWidth(3, 700)
-
-        self.ui.file_button.clicked.connect(self.onClickedOpenFileDialog)
-        self.ui.search_button.clicked.connect(self.onClickedSearch)
-        self.ui.keywords_edit.returnPressed.connect(self.onClickedSearch)
-
-        self.ui.text_scale_up.clicked.connect(self.onClickedZoomIn)
-        self.ui.text_scale_down.clicked.connect(self.onClickedZoomOut)
-        self.ui.update.clicked.connect(self.onClickedUpdate)
-        self.ui.show_error_button.clicked.connect(self.onClickedShowErrorListView)
-        self.ui.show_all_button.clicked.connect(self.onClickedShowAllListView)
-        self.ui.setting.clicked.connect(self.onClickedShowSettingWindow)
-        self.ui.help.clicked.connect(self.onClickedHelpWindow)
-        self.ui.index_button.clicked.connect(self.onClickedIndexWindow)
-        self.ui.common_dir.clicked.connect(self.onClickedFileWindow)
-
-        self.ui.tableView.clicked.connect(self.onClickedTableView)
-        self.ui.listView_error.clicked.connect(self.onClickedListView)
-        self.ui.listView_all.clicked.connect(self.onClickedListView_)
-
-        self.timer = QTimer(self)
-        self.timer.timeout.connect(self.UpdateUi)
-        self.timer.start(150)
+        self.InitComboBox()
+        self.InitGeometry()
+        self.InitRelayUpdate()
 
     def UpdateUi(self):
         if not self.queue.empty():
@@ -118,10 +91,52 @@ class MainWindow(QMainWindow):
                     if content[1] == 0:
                         if self.ui.frame_center_left.isVisible():
                             self.ui.frame_center_left.hide()
-                elif content[0]=="_common_dir":
+                elif content[0] == "_common_dir":
                     self.ui.file_edit.setText(content[1])
 
     '''-----------------------------------主窗体-----------------------------------------------'''
+
+    def Init(self):
+        if self.DirPath is not None:
+            self.ui.file_edit.setText(self.DirPath)
+
+        # 不允许崩溃
+        self.ui.splitter.setCollapsible(0, False)
+        self.ui.splitter.setCollapsible(1, False)
+        self.ui.splitter.setCollapsible(2, False)
+        self.ui.splitter_2.setCollapsible(0, False)
+        self.ui.splitter_2.setCollapsible(1, False)
+
+        self.ui.textframe.setReadOnly(True)
+        self.ui.file_edit.setReadOnly(True)
+        self.ui.frame_center_left.hide()
+        self.ui.progressBar.stop()
+        self.ui.progressBar.hide()
+
+        self.ui.tableView.setColumnWidth(0, 200)
+        self.ui.tableView.setColumnWidth(1, 75)
+        self.ui.tableView.setColumnWidth(2, 150)
+        self.ui.tableView.setColumnWidth(3, 700)
+
+        self.ui.file_button.clicked.connect(self.onClickedOpenFileDialog)
+        self.ui.search_button.clicked.connect(self.onClickedSearch)
+        self.ui.keywords_edit.returnPressed.connect(self.onClickedSearch)
+        self.ui.text_scale_up.clicked.connect(self.onClickedZoomIn)
+        self.ui.text_scale_down.clicked.connect(self.onClickedZoomOut)
+        self.ui.update.clicked.connect(self.onClickedUpdate)
+        self.ui.show_error_button.clicked.connect(self.onClickedShowErrorListView)
+        self.ui.show_all_button.clicked.connect(self.onClickedShowAllListView)
+        self.ui.setting.clicked.connect(self.onClickedShowSettingWindow)
+        self.ui.help.clicked.connect(self.onClickedHelpWindow)
+        self.ui.index_button.clicked.connect(self.onClickedIndexWindow)
+        self.ui.common_dir.clicked.connect(self.onClickedFileWindow)
+        self.ui.tableView.clicked.connect(self.onClickedTableView)
+        self.ui.listView_error.clicked.connect(self.onClickedListView)
+        self.ui.listView_all.clicked.connect(self.onClickedListView_)
+
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.UpdateUi)
+        self.timer.start(150)
 
     def onClickedZoomIn(self):
         # 放大
@@ -146,8 +161,8 @@ class MainWindow(QMainWindow):
             self.ui.listView_error.show()
 
     def onClickedOpenFileDialog(self):
-        self.search_dir_path = QFileDialog.getExistingDirectory(self, '选择文件夹', self.CurPath)
-        self.ui.file_edit.setText(self.search_dir_path)
+        self.search_DirPath = QFileDialog.getExistingDirectory(self, '选择文件夹', self.CurPath)
+        self.ui.file_edit.setText(self.search_DirPath)
 
     def onClickedTableView(self, index):
         table_row = index.row()
@@ -181,32 +196,10 @@ class MainWindow(QMainWindow):
 
     '''-----------------------------------初始化-----------------------------------------------'''
 
-    def InitComboBox(self):
-        items = ["Microsoft Word 97-2003 文件（.doc）",
-                 "Microsoft Word 文件（.docx）",
-                 "Microsoft Excel 97-2003 文件（.xls）",
-                 "Microsoft Excel 文件（.xlsx）",
-                 "PDF 文件（.pdf）",
-                 "文本文档（.txt）"]
-        items_icon = [os.path.abspath(os.path.join(self.IconPath, 'doc.png')),
-                      os.path.abspath(os.path.join(self.IconPath, 'docx.png')),
-                      os.path.abspath(os.path.join(self.IconPath, 'xls.png')),
-                      os.path.abspath(os.path.join(self.IconPath, 'xlsx.png')),
-                      os.path.abspath(os.path.join(self.IconPath, 'pdf.png')),
-                      os.path.abspath(os.path.join(self.IconPath, 'txt.png'))]
-        first_item = '全部文件类型'
-        first_item_icon = os.path.abspath(os.path.join(self.IconPath, 'sysfile.png'))
-        line_edit_icon = os.path.abspath(os.path.join(self.IconPath, 'sysfile.png'))
-
-        self.ui.comboBox.InitComboBox(
-            line_edit_icon=line_edit_icon,
-            first_item=first_item, first_item_icon=first_item_icon,
-            items=items, items_icon=items_icon)
-
     def InitLogger(self):
         if not os.path.isdir(self.LogPath):
             os.makedirs(self.LogPath)
-        self.logger = logging.getLogger()
+        self.logger = logging.getLogger(__name__)
         logging.basicConfig(level='INFO', format='%(asctime)s: %(message)s')
         fmt = '%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s:%(message)s'
         fh = logging.FileHandler(
@@ -216,22 +209,89 @@ class MainWindow(QMainWindow):
         fh.setLevel(logging.INFO)
         self.logger.addHandler(fh)
 
-    def RelayUpdate(self):
+    def InitGeometry(self):
+        if os.path.exists(os.path.join(self.CurPath, "settings.ini")):
+            self.restoreGeometry(self.settings.value("geometry", self.saveGeometry()))
+            self.restoreState(self.settings.value("state", self.saveState()))
+            print(self.ui.splitter.saveGeometry())
+            self.ui.splitter.restoreGeometry(self.settings.value("splitter_geometry", self.ui.splitter.saveGeometry()))
+            self.ui.splitter.restoreState(self.settings.value("splitter_state", self.ui.splitter.saveState()))
+            self.ui.splitter_2.restoreGeometry(
+                self.settings.value("splitter_2_geometry", self.ui.splitter_2.saveGeometry()))
+            self.ui.splitter_2.restoreState(self.settings.value("splitter_2_state", self.ui.splitter_2.saveState()))
+        else:
+            screen = QDesktopWidget().screenGeometry()
+            height = screen.height() * 6 / 7
+            width = screen.width() * 9 / 10
+            self.setGeometry(int((screen.width() - width) / 2), int((screen.height() - height) / 2), int(width),
+                             int(height))
+
+    def InitComboBox(self):
+        items = ["Microsoft Word 97-2003 文件（.doc）",
+                 "Microsoft Word 文件（.docx）",
+                 "Microsoft Excel 97-2003 文件（.xls）",
+                 "Microsoft Excel 文件（.xlsx）",
+                 "Microsoft PowerPoint 97-2003 文件（.ppt）",
+                 "Microsoft PowerPoint 文件（.pptx）",
+                 "Adobe PDF 文件（.pdf）",
+                 "EPUB 文件（.epub）",
+                 "MOBI 文件（.mobi）",
+                 "文本文档（.txt）"]
+        items_icon = [os.path.abspath(os.path.join(self.IconDir, 'doc.png')),
+                      os.path.abspath(os.path.join(self.IconDir, 'docx.png')),
+                      os.path.abspath(os.path.join(self.IconDir, 'xls.png')),
+                      os.path.abspath(os.path.join(self.IconDir, 'xlsx.png')),
+                      os.path.abspath(os.path.join(self.IconDir, 'ppt.png')),
+                      os.path.abspath(os.path.join(self.IconDir, 'pptx.png')),
+                      os.path.abspath(os.path.join(self.IconDir, 'pdf.png')),
+                      os.path.abspath(os.path.join(self.IconDir, 'epub.png')),
+                      os.path.abspath(os.path.join(self.IconDir, 'mobi.png')),
+                      os.path.abspath(os.path.join(self.IconDir, 'txt.png'))]
+        first_item = '全部文件类型'
+        first_item_icon = os.path.abspath(os.path.join(self.IconDir, 'sysfile.png'))
+        line_edit_icon = os.path.abspath(os.path.join(self.IconDir, 'sysfile.png'))
+        self.screen_len = len(items)
+        self.ui.comboBox.InitComboBox(
+            line_edit_icon=line_edit_icon,
+            first_item=first_item,
+            first_item_icon=first_item_icon,
+            items=items,
+            items_icon=items_icon,
+        )
+
+    def InitRelayUpdate(self):
         """耗时操作"""
         self.ui.frame.setEnabled(False)
-        self.relay_thread = RelayUpdateThread(self.queue, self.socket, self.CurPath, self.SettingPath)
+        self.relay_thread = RelayUpdateThread(self.queue, self.socket, self.CurPath, self.SettingPath, self.Name,
+                                              self.Name_, self.LogoPath, self.LnkPath, self.LnkPath2)
         self.relay_thread.update_setting.connect(self.InitSetting)
-        self.relay_thread.update_dir.connect(self.InitDir)
+        self.relay_thread.update_dir.connect(self.UpdateDir)
+        self.relay_thread.update_screen.connect(self.UpdateScreen)
         self.relay_thread.update_textframe.connect(self.InitTextFrame)
         self.relay_thread.complete.connect(self.InitComplete)
+        self.relay_thread.exit_.connect(self.Exit_)
+
         self.relay_thread.start()
+
+    def Exit_(self):
+        try:
+            self.backend_thread.OnDestroy()
+        except:
+            self.logger.info(traceback.format_exc())
+        try:
+            qApp.quit()
+        except:
+            self.logger.info(traceback.format_exc())
+        sys.exit(0)
 
     def InitTextFrame(self, content):
         self.ui.textframe.Init(fontsize=content[0], fontfamily=content[1], linewrap=content[2], linenumber=content[3],
                                mysetting_dict=self.mysetting_dict)
 
-    def InitDir(self, dir):
-        self.ui.file_edit.setText(dir)
+    def UpdateScreen(self, l):
+        self.ui.comboBox.UpdateComboBox(self.screen_len, l)
+
+    def UpdateDir(self, dir):
         if self.isMinimized() or not self.isVisible():
             self.setWindowFlags(QtCore.Qt.Window)
             self.activateWindow()
@@ -239,42 +299,32 @@ class MainWindow(QMainWindow):
                 self.showMaximized()
             else:
                 self.showNormal()
+        self.ui.file_edit.setText(dir)
 
     def InitSetting(self, setting):
         self.mysetting_dict = setting
         self._auto_run = self.mysetting_dict['_auto_run']
-        self._last_dir = self.mysetting_dict['_last_dir']
-        self._right_click_menu = self.mysetting_dict['_right_click_menu']
+        self._last_dir_flag = self.mysetting_dict['_last_dir_flag']
+        self._right_menu = self.mysetting_dict['_right_menu']
         self._remind = self.mysetting_dict['_remind']
         self._show_all = self.mysetting_dict['_show_all']
         self._limit_file_size = self.mysetting_dict['_limit_file_size']
+        if self.mysetting_dict["_desktop"]:
+            self.InitDesktop()
+
+    def InitDesktop(self):
+        # 判断是否有桌面图标
+        if not os.path.exists(self.LnkPath) and not os.path.exists(self.LnkPath2):
+            logger.info("桌面没有创建快捷方式")
+            create_shortcut(sys.argv[0], self.Name_, "一个开源的、本地的、安全的、支持全文检索的搜索器。", self.LogoPath)
+
 
     def InitComplete(self):
         self.ui.frame.setEnabled(True)
 
-    def SearchShowUi(self):
-        self.ui.progressBar.start()
-        self.ui.progressBar.show()
-        self.ui.top_lable.setText("搜索中")
-        self.ui.bottom_lable.setText("搜索中·····")
+    '''-----------------------------------后台图标-----------------------------------------------'''
 
-    def SearchHideeUi(self):
-        self.ui.progressBar.hide()
-        self.ui.progressBar.stop()
-        self.ui.top_lable.setText("搜索就绪")
-        self.ui.bottom_lable.setText("搜索完毕!")
-
-    def SearchComplete(self):
-        self.SearchHideeUi()
-        self.logger.info("搜索完成")
-        self.ui.search_button.setText("搜索")
-        self.search_running = False
-        if self._remind:
-            self.backend_thread.ShowToast("当前搜索完成")
-
-    '''-----------------------------------系统托盘-----------------------------------------------'''
-
-    def SetTrayIcon(self, f=True):
+    def InitTrayIcon(self, f=True):
         if f:
             self.backend_thread = TrayThread(icon=self.icon, title=self.title)
             self.backend_thread.start()
@@ -283,15 +333,7 @@ class MainWindow(QMainWindow):
             self.backend_thread.help.connect(self.onClickedHelpWindow)
             self.backend_thread.exit.connect(self.onClickedExit)
             self.backend_thread.update.connect(self.onClickedUpdate)
-            self.backend_thread.restart.connect(self.restart_real_live)
-
-    def restart_real_live(self):
-        """ 进程控制实现自动重启"""
-        qApp.quit()
-        self.p = QProcess
-        print(qApp.applicationFilePath())
-        print(sys.executable, sys.argv)
-        s = self.p.startDetached(sys.executable, sys.argv)
+            self.backend_thread.restart.connect(self.onClickedRestart)
 
     def onClickedShow(self):
         if self.isMinimized() or not self.isVisible():
@@ -304,13 +346,32 @@ class MainWindow(QMainWindow):
         else:
             if self.isMaximized():
                 self.isMax = True
-
             self.close()
 
+    def onClickedRestart(self):
+        """ 进程控制实现自动重启"""
+        self.settings.setValue("geometry", self.saveGeometry())
+        self.settings.setValue("state", self.saveState())
+        self.settings.setValue("splitter_geometry", self.ui.splitter.saveGeometry())
+        self.settings.setValue("splitter_state", self.ui.splitter.saveState())
+        self.settings.setValue("splitter_2_geometry", self.ui.splitter_2.saveGeometry())
+        self.settings.setValue("splitter_2_state", self.ui.splitter_2.saveState())
+        self.backend_thread.OnDestroy()
+        qApp.quit()
+        self.p = QProcess
+        s = self.p.startDetached(sys.executable, sys.argv)
+
     def onClickedExit(self):
-        self.setVisible(False)  # 托盘图标会自动消失
-        QApplication.instance().quit()
+        self.settings.setValue("geometry", self.saveGeometry())
+        self.settings.setValue("state", self.saveState())
+        self.settings.setValue("splitter_geometry", self.ui.splitter.saveGeometry())
+        self.settings.setValue("splitter_state", self.ui.splitter.saveState())
+        self.settings.setValue("splitter_2_geometry", self.ui.splitter_2.saveGeometry())
+        self.settings.setValue("splitter_2_state", self.ui.splitter_2.saveState())
+        self.backend_thread.OnDestroy()
+        qApp.quit()
         sys.exit(0)
+
 
     def onClickedShowSettingWindow(self):
         if self.isMinimized() or not self.isVisible():
@@ -362,6 +423,26 @@ class MainWindow(QMainWindow):
 
     '''-----------------------------------搜索相关-----------------------------------------------'''
 
+    def SearchShowUi(self):
+        self.ui.progressBar.start()
+        self.ui.progressBar.show()
+        self.ui.top_lable.setText("搜索中")
+        self.ui.bottom_lable.setText("搜索中·····")
+
+    def SearchHideeUi(self):
+        self.ui.progressBar.hide()
+        self.ui.progressBar.stop()
+        self.ui.top_lable.setText("搜索就绪")
+        self.ui.bottom_lable.setText("搜索完毕!")
+
+    def SearchComplete(self):
+        self.SearchHideeUi()
+        self.logger.info("搜索完成")
+        self.ui.search_button.setText("搜索")
+        self.search_running = False
+        if self._remind:
+            self.backend_thread.ShowToast("当前搜索完成")
+
     def onClickedSearch(self):
         if self.search_running:
             reply = QMessageBox.information(self, '注意', '是否要停止搜索？', QMessageBox.Yes | QMessageBox.Cancel)
@@ -396,7 +477,8 @@ class MainWindow(QMainWindow):
             else:
                 self.SearchShowUi()
                 self.search_running = True
-                self.mysetting_dict["_search_dir"]=self.search_dirname
+                self.mysetting_dict["_last_screen"] = self.ui.comboBox.getState()[1:]
+                self.mysetting_dict["_last_dir"] = self.search_dirname
                 self.logger.info("开启搜索线程")
                 self.logger.info("搜索类型：" + str(self.screen))
                 self.logger.info("搜索目录：" + self.search_dirname)
@@ -420,26 +502,37 @@ class RelayUpdateThread(QThread):
     update_setting = pyqtSignal(SqliteDict)
     update_dir = pyqtSignal(str)
     update_textframe = pyqtSignal(list)
+    update_screen = pyqtSignal(list)
     complete = pyqtSignal()
+    exit_ = pyqtSignal()
 
-    def __init__(self, queue, socket, CurPath, SettingPath):
+    def __init__(self, queue, socket, CurPath, SettingPath, Name, Name_, LogoPath, LnkPath, LnkPath2):
         super().__init__()
         self.queue = queue
         self.CurPath = CurPath
         self.socket = socket
         self.SettingPath = SettingPath
+        self.Name = Name
+        self.Name_ = Name_
+        self.LogoPath = LogoPath
+        self.LnkPath = LnkPath
+        self.LnkPath2 = LnkPath2
 
     def run(self):
         self.setting()
         self.init_textframe()
-        if self.mysetting_dict["_last_dir"]:
-            self.update_dir.emit(self.mysetting_dict["_search_dir"])
-
+        if self.mysetting_dict["_last_dir_flag"]:
+            self.update_dir.emit(self.mysetting_dict["_last_dir"])
+        if self.mysetting_dict["_last_screen_flag"]:
+            self.update_screen.emit(self.mysetting_dict["_last_screen"])
         self.complete.emit()
         while True:
             data, addr = self.socket.recvfrom(1024)
-            dir_path = data.decode("utf-8")
-            self.update_dir.emit(dir_path)
+            data_ = data.decode("utf-8")
+            if data_ == "exit_":
+                self.exit_.emit()
+            else:
+                self.update_dir.emit(data_)
 
     def init_textframe(self):
         self.update_textframe.emit([
@@ -451,13 +544,15 @@ class RelayUpdateThread(QThread):
 
     def setting(self):
         if not os.path.exists(self.SettingPath):
-            print("第一次运行")
+            logger.info(1111111)
             self.mysetting_dict = SqliteDict(self.SettingPath, autocommit=True)
             self.mysetting_dict.clear()
             self.mysetting_dict['_auto_run'] = True
-            self.mysetting_dict['_last_dir'] = True
-            self.mysetting_dict['_search_dir'] = ""
-            self.mysetting_dict['_right_click_menu'] = True
+            self.mysetting_dict['_last_dir_flag'] = True
+            self.mysetting_dict['_last_dir'] = ""
+            self.mysetting_dict['_last_screen_flag'] = True
+            self.mysetting_dict['_last_screen'] = []
+            self.mysetting_dict['_right_menu'] = True
             self.mysetting_dict['_remind'] = True
             self.mysetting_dict['_show_all'] = False
             self.mysetting_dict['_limit_file_size'] = 100
@@ -466,95 +561,128 @@ class RelayUpdateThread(QThread):
             self.mysetting_dict['_linewrap'] = True
             self.mysetting_dict['_linenumber'] = True
             self.mysetting_dict['_common_dir'] = []
+            self.mysetting_dict['_desktop'] = True
             self.update_setting.emit(self.mysetting_dict)
-            self.init_auto()
-            self.init_right_click()
+            if not self.init_auto():
+                self.mysetting_dict['_auto_run'] = False
+            if not self.init_right_click():
+                self.mysetting_dict['_right_menu'] = False
         else:
             self.mysetting_dict = SqliteDict(self.SettingPath, autocommit=True)
             self.update_setting.emit(self.mysetting_dict)
 
+
     def init_auto(self):
-        name = 'OpenSearcher'
-        path = sys.argv[0]
-        # path = os.path.abspath(os.path.join(self.CurPath, "OpenSearcher.exe"))
-        KeyName = r"SOFTWARE\Microsoft\Windows\CurrentVersion\Run"
-        key = win32api.RegOpenKey(win32con.HKEY_CURRENT_USER, KeyName, 0, win32con.KEY_ALL_ACCESS)
-        win32api.RegSetValueEx(key, name, 0, win32con.REG_SZ, path)
-        print('开启软件自启动')
+        try:
+            path = sys.argv[0]
+            # path = os.path.abspath(os.path.join(self.CurPath, "OpenSearcher.exe"))
+            KeyName = r"SOFTWARE\Microsoft\Windows\CurrentVersion\Run"
+            key = win32api.RegOpenKey(win32con.HKEY_CURRENT_USER, KeyName, 0, win32con.KEY_ALL_ACCESS)
+            win32api.RegSetValueEx(key, self.Name, 0, win32con.REG_SZ, path)
+            logger.info('成功开启软件自启动')
+            return True
+        except:
+            win32api.MessageBox(0, traceback.format_exc(), self.Name_, win32con.MB_OK)
+            return False
 
     def init_right_click(self):
         if not is_user_admin():
-            run_as_admin("set_menu")
-            return
+            return run_as_admin("set_menu")
+        else:
+            try:
+                if sys.argv[0][-3:] == ".py":
+                    ExePath = " ".join([sys.executable, sys.argv[0]])
+                else:
+                    ExePath = sys.argv[0]
+                create_right_menu(name=self.Name, content=self.Name_ + " 搜索", icon=self.LogoPath,
+                                  command=ExePath + " \"%L\"",
+                                  type_="DIRECTORY")
+                create_right_menu(name=self.Name, content=self.Name_ + " 搜索", icon=self.LogoPath,
+                                  command=ExePath + " \"%W\"",
+                                  type_="DIRECTORY_BACKGROUND")
+                return True
+            except Exception:
+                win32api.MessageBox(0, traceback.format_exc(), self.Name_, win32con.MB_OK)
+                return False
 
 
 def main():
     print(sys.argv)
 
-    Name = "Open Searcher"
-    KeyName = "OpenSearcher"
-    Version = "0.0.4"
+    Name_ = "Open Searcher"
+    Name = "OpenSearcher"
+    Version = "0.0.5"
     UpdateUrl = "https://aidcs-1256440297.cos.ap-beijing.myqcloud.com/OpenSearcher/update.txt"
-    ExePath = sys.argv[0]
-    CurPath = os.path.dirname(os.path.abspath(ExePath))
+
+    CurPath = os.path.dirname(os.path.abspath(sys.argv[0]))
     os.environ['REQUESTS_CA_BUNDLE'] = os.path.abspath(os.path.join(CurPath, 'cacert.pem'))
     LogoPath = os.path.abspath(os.path.join(CurPath, "icon/logo.ico"))
-    LnkPath = os.path.abspath(os.path.join(winshell.desktop(), "Open Searcher" + ".lnk"))
-    LnkPath2 = os.path.abspath(os.path.join(winshell.common_desktop(), "Open Searcher" + ".lnk"))
-    # 判断是否是设置菜单
+    if sys.argv[0][-3:] == ".py":
+        ExePath = " ".join([sys.executable, sys.argv[0]])
+    else:
+        ExePath = sys.argv[0]
+
+    # 判断是否是设置右键菜单
     if len(sys.argv) > 1:
         if sys.argv[-1] == "set_menu":
             try:
                 # icon 设置成 exe文件也可以，Windows系统会自动读取ico
-                create_right_menu(name=KeyName, content=Name + " 搜索", icon=LogoPath, command=ExePath + " \"%L\"",
+                create_right_menu(name=Name, content=Name_ + " 搜索", icon=LogoPath, command=ExePath + " \"%L\"",
                                   type_="DIRECTORY")
-                create_right_menu(name=KeyName, content=Name + " 搜索", icon=LogoPath, command=ExePath + " \"%W\"",
+                create_right_menu(name=Name, content=Name_ + " 搜索", icon=LogoPath, command=ExePath + " \"%W\"",
                                   type_="DIRECTORY_BACKGROUND")
             except Exception:
-                traceback.print_exc()
+                win32api.MessageBox(0, traceback.format_exc(), Name_, win32con.MB_OK)
             return
         elif sys.argv[-1] == "del_menu":
             try:
-                remove_right_menu(KeyName, type_="DIRECTORY")
-                remove_right_menu(KeyName, type_="DIRECTORY_BACKGROUND")
+                remove_right_menu(Name, type_="DIRECTORY")
+                remove_right_menu(Name, type_="DIRECTORY_BACKGROUND")
             except Exception:
-                traceback.print_exc()
+                win32api.MessageBox(0, traceback.format_exc(), Name_, win32con.MB_OK)
             return
+        else:
+            DirPath = sys.argv[-1]
+    else:
+        DirPath = None
 
     # 判断是否已经启动
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         host = socket.gethostname()
         s.bind((host, 60111))
-    except:
-        print('程序已经在运行了')
+    except Exception:
         if len(sys.argv) > 1:
             s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             host = socket.gethostname()
             s.connect((host, 60111))
-            data = sys.argv[1]
+            data = sys.argv[-1]
             s.sendto(data.encode('utf-8'), (host, 60111))
         else:
-            win32api.MessageBox(0, "提示：Open Searcher程序已经在运行中了", Name, win32con.MB_OK)
+            result = win32api.MessageBox(0, "提示：Open Searcher程序后台运行中\n是否停止当前正在运行的Open Searcher？", Name_,
+                                         win32con.MB_YESNO)
+            if result == 6:
+                s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                host = socket.gethostname()
+                s.connect((host, 60111))
+                data = "exit_"
+                s.sendto(data.encode('utf-8'), (host, 60111))
+                pass
         return
 
-    # 判断是否有桌面图标
-    if not os.path.exists(LnkPath) and not os.path.exists(LnkPath2):
-        print("桌面没有创建快捷方式")
-        create_shortcut(ExePath, Name, "一个开源的、本地的、安全的、支持全文检索的搜索器。", LogoPath)
-
     app = QApplication(sys.argv)
-    if len(sys.argv) > 1:
-        dir_path = sys.argv[1]
-    else:
-        dir_path = None
-    screen = QDesktopWidget().screenGeometry()
-    height = screen.height() * 6 / 7
-    width = screen.width() * 9 / 10
-    window = MainWindow(icon=LogoPath, title=Name + " " + Version, version=Version, update_url=UpdateUrl,
-                        CurPath=CurPath, socket=s, dir_path=dir_path)
-    window.setGeometry(int((screen.width() - width) / 2), int((screen.height() - height) / 2), int(width), int(height))
-    window.setWindowTitle(Name + " " + Version)
+    window = MainWindow(icon=LogoPath,
+                        title=Name_ + " " + Version,
+                        socket=s,
+                        Version=Version,
+                        UpdateUrl=UpdateUrl,
+                        CurPath=CurPath,
+                        DirPath=DirPath,
+                        Name_=Name_,
+                        LogoPath=LogoPath,
+                        Name=Name,
+                        ExePath=ExePath)
+    window.setWindowTitle(Name_ + " " + Version + " 开源软件")
     window.setWindowIcon(QIcon(LogoPath))
     window.show()
     sys.exit(app.exec())

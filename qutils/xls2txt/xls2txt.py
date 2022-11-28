@@ -1,11 +1,13 @@
+import logging
 import os
 import time
 import traceback
 import warnings
 import xlrd
 from win32com import client as wc
-
 from qutils import xlsx2txt
+
+logger = logging.getLogger(__name__)
 
 
 def _xls2txt(xls_path):
@@ -33,21 +35,19 @@ def _xls2txt(xls_path):
 def xls2txt(xls_path, temp_xlsx_path) -> str:
     try:
         try:
-            # 用来将dox转docx，注意:如果安装WPS，它会篡改office的COM接口，改成指向它，并且WPS在合并模式下，无法后台操作
-            # 尝试多方式启动
             excel = wc.Dispatch("Excel.Application")
-            # self.word.Visible = True  # 确定是否可见
         except:
-            traceback.print_exc()
+            logger.info(traceback.format_exc())
             try:
                 excel = wc.Dispatch("kwps.Application")
             except:
-                traceback.print_exc()
+                logger.info(traceback.format_exc())
                 try:
                     excel = wc.Dispatch("wps.Application")
                 except:
-                    traceback.print_exc()
-                    warnings.warn("未发现excel组件，将无法查找老版的xls文件", RuntimeWarning)
+                    logger.info(traceback.format_exc())
+                    logger.info("未发现excel组件，将无法查找老版的xls文件")
+                    # warnings.warn("未发现excel组件，将无法查找老版的xls文件", RuntimeWarning)
                     raise
         doc = excel.Workbooks.Open(xls_path)
         doc.SaveAs(temp_xlsx_path, 51)
@@ -65,7 +65,9 @@ def process(xls_path, temp_xlsx_path):
     try:
         text = _xls2txt(xls_path)
     except:
-        warnings.warn(message=traceback.format_exc(), category=RuntimeWarning)
-        warnings.warn(message="尝试Win32转存:" + xls_path, category=RuntimeWarning)
+        logger.info(traceback.format_exc())
+        logger.info("尝试Win32转存:" + xls_path)
+        # warnings.warn(message=traceback.format_exc(), category=RuntimeWarning)
+        # warnings.warn(message="尝试Win32转存:" + xls_path, category=RuntimeWarning)
         text = xls2txt(xls_path, temp_xlsx_path)
     return text

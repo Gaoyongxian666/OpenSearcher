@@ -624,9 +624,12 @@ QPushButton:hover {
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
             </property>
+            <property name="childrenCollapsible">
+             <bool>false</bool>
+            </property>
             <widget class="QFrame" name="frame_center_left">
              <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                <horstretch>4</horstretch>
                <verstretch>0</verstretch>
               </sizepolicy>
@@ -666,7 +669,7 @@ QPushButton:hover {
             </widget>
             <widget class="QFrame" name="frame_center_center">
              <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                <horstretch>8</horstretch>
                <verstretch>0</verstretch>
               </sizepolicy>

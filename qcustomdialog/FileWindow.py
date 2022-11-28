@@ -1,17 +1,7 @@
-import hashlib
 import os
-import traceback
-from queue import Queue
-
-import psutil
-import pythoncom
-from PyQt5 import QtCore
-from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon
 from PyQt5.QtWidgets import QMainWindow, QMessageBox, QFileDialog, QAbstractItemView
-
 from qcustomdialog import index, file
-from qutils.util import file_name_list, get_text
 
 
 class FileWindow(QMainWindow):
@@ -22,9 +12,9 @@ class FileWindow(QMainWindow):
         self.setWindowTitle("常用目录")
 
         self.CurPath = parent.CurPath
-        self.IconPath = parent.IconPath
+        self.IconDir = parent.IconDir
         self.mysetting_dict = parent.mysetting_dict
-        self.queue=parent.queue
+        self.queue = parent.queue
 
         self.child.ok.clicked.connect(self.onClickedOk)
         self.child.delete_2.clicked.connect(self.onClickedDel)
@@ -38,7 +28,7 @@ class FileWindow(QMainWindow):
         self.Init()
 
     def addItem(self, dir_path):
-        item = QStandardItem(QIcon(os.path.abspath(os.path.join(self.CurPath, "icon", "folder.png"))), dir_path)
+        item = QStandardItem(QIcon(os.path.abspath(os.path.join(self.IconDir, "folder.png"))), dir_path)
         self.listModel.appendRow(item)
 
     def Init(self):
@@ -53,7 +43,7 @@ class FileWindow(QMainWindow):
             return
         _item = self.listModel.item(table_row, 0)
         file_path = _item.text()
-        self.queue.put(("_common_dir",file_path))
+        self.queue.put(("_common_dir", file_path))
         self.close()
 
     def onClickedDel(self):
@@ -67,7 +57,6 @@ class FileWindow(QMainWindow):
                 self.listModel.removeRow(table_row)
                 _common_dir.remove(file_path)
             self.mysetting_dict["_common_dir"] = _common_dir
-
         else:
             QMessageBox.information(self, '注意', '请先选中一项！', QMessageBox.Yes)
 

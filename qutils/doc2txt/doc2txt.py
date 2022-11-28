@@ -1,3 +1,4 @@
+import logging
 import os
 import subprocess
 import time
@@ -5,6 +6,8 @@ import traceback
 import warnings
 from win32com import client as wc
 from docx2txt import docx2txt
+
+logger = logging.getLogger(__name__)
 
 
 def _doc2txt(doc_path, antiword_try_wrap: bool, antiword_path) -> str:
@@ -61,20 +64,19 @@ def doc2txt(doc_path, temp_docx_path) -> str:
             # 用来将dox转docx，注意:如果安装WPS，它会篡改office的COM接口，改成指向它，并且WPS在合并模式下，无法后台操作
             # 尝试多方式启动
             word = wc.Dispatch("Word.Application")
-            # self.word.Visible = True  # 确定是否可见
         except:
-            traceback.print_exc()
+            logger.info(traceback.format_exc())
             try:
                 word = wc.Dispatch("kwps.Application")
             except:
-                traceback.print_exc()
+                logger.info(traceback.format_exc())
                 try:
                     word = wc.Dispatch("wps.Application")
                 except:
-                    traceback.print_exc()
-                    print("未发现WORD组件，将无法查找老版的doc文件")
+                    logger.info(traceback.format_exc())
+                    logger.info("未发现WORD组件，将无法查找老版的doc文件")
                     raise
-        doc = word.Documents.Open(doc_path)
+        doc = word.Documents.Open(doc_path, ReadOnly=True)
         doc.SaveAs(temp_docx_path, 12)
         doc.Close()
         word.Quit()
@@ -91,8 +93,10 @@ def process(doc_path, temp_docx_path, antiword_try_wrap=False, antiword_path=Non
         try:
             text = _doc2txt(doc_path, antiword_try_wrap, antiword_path)
         except:
-            warnings.warn(message=traceback.format_exc(), category=RuntimeWarning)
-            warnings.warn(message="尝试Win32转存:" + doc_path, category=RuntimeWarning)
+            logger.info(traceback.format_exc())
+            logger.info("尝试Win32转存:" + doc_path)
+            # warnings.warn(message=traceback.format_exc(), category=RuntimeWarning)
+            # warnings.warn(message="尝试Win32转存:" + doc_path, category=RuntimeWarning)
             text = doc2txt(doc_path, temp_docx_path)
         return text
     else:

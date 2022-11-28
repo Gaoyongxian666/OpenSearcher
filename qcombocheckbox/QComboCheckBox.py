@@ -8,12 +8,20 @@ class QComboCheckBox(QComboBox):
     def __init__(self, *args):
         super(QComboCheckBox, self).__init__(*args)
 
+    def UpdateComboBox(self, _len: int = None, _check_list: list = None):
+        if _check_list is None or len(_check_list) == 0:
+            _check_list = [True for i in range(_len)]
+        for i, check in enumerate(_check_list):
+            self.qCheckBox[i + 1].setChecked(check)
+
     def InitComboBox(self, line_edit_icon: str, first_item: str, first_item_icon: str, items: list, items_icon: list):
+
         self.items = items
         self.items_icon = items_icon
 
         self.items.insert(0, first_item)
         self.items_icon.insert(0, first_item_icon)
+        self.setMaxVisibleItems(len(items))
 
         self.row_num = len(self.items)
         self.selectedrow_num = 0
@@ -34,9 +42,14 @@ class QComboCheckBox(QComboBox):
         self.qListWidget.setStyleSheet("margin-left: 5px;")
         self.qListWidget.setSpacing(0)
 
-        # 默认选择第一个全部文件
-        self.qCheckBox[0].setCheckState(1)
         self.qLineEdit.addAction(QIcon(line_edit_icon), QLineEdit.LeadingPosition)
+        self.UpdateComboBox(_len=len(self.items) - 1)
+
+    def getState(self):
+        all_list = []
+        for i in range(len(self.qCheckBox)):
+            all_list.append(self.qCheckBox[i].isChecked())
+        return all_list
 
     def addQCheckBox(self, i):
         self.qCheckBox.append(QCheckBox())

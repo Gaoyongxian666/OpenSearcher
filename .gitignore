@@ -129,7 +129,7 @@ dmypy.json
 .pyre/
 
 
-*.db
+/*.db
 pack
 logs
 .errortemp
@@ -137,4 +137,10 @@ logs
 .idea
 !requirements.txt
 !antiword/
+
+# 只忽略当前文件下的txt文件
 /*.txt
+/*.ini
+venv32
+pack32
+settings.ini

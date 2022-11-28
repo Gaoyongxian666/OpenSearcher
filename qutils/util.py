@@ -1,4 +1,5 @@
 import io
+import logging
 import time
 import os
 import sys
@@ -8,10 +9,9 @@ import ctypes
 import chardet
 import docx2txt
 import winshell
-# from PyQt5.QtWidgets import qApp
 from PyQt5.QtWidgets import qApp
 
-from qutils import doc2txt, xls2txt, xlsx2txt
+from qutils import doc2txt, xls2txt, xlsx2txt, pptx2txt, ppt2txt, epub2txt, mobi2txt
 import pdfminer.high_level
 from PyQt5.QtCore import QProcess
 from PyQt5.QtGui import QIcon
@@ -19,6 +19,7 @@ import win32clipboard
 from ctypes import *
 from win32comext.shell.shell import ShellExecuteEx
 
+logger=logging.getLogger(__name__)
 
 def file_name_list(file_dir: str, screen: list, icon_dir: str = "icon", size_limit=100) -> list:
     """返回指定类型的文件列表"""
@@ -37,8 +38,8 @@ def file_name_list(file_dir: str, screen: list, icon_dir: str = "icon", size_lim
                         L.append([(icon_, file), (None, getDocSize(absolute_path)),
                                   (None, modifytime), (None, absolute_path), (None, suffix)])
                     else:
-                        print("文件太大：" + absolute_path)
-                        print(getDocSize(absolute_path))
+                        logger.info("文件太大：" + absolute_path)
+                        logger.info(getDocSize(absolute_path))
 
     return L
 
@@ -49,7 +50,7 @@ def formatSize(bytes):
         bytes = float(bytes)
         kb = bytes / 1024
     except:
-        print("传入的字节格式不对")
+        logger.info("传入的字节格式不对")
         return "Error"
     if kb >= 1024:
         M = kb / 1024
@@ -68,7 +69,7 @@ def getDocSize(path):
         size = os.path.getsize(path)
         return formatSize(size)
     except Exception as err:
-        print(err)
+        logger.info(err)
 
 
 def warning_on_one_line(message, category, filename, lineno, file=None, line=None):
@@ -111,6 +112,8 @@ def detect_encoding(text_file, min_confidence=0.98, text_length=1024):
         with open(text_file, 'rb') as text:
             _ = chardet.detect(text.read(text_length))
             encoding, confidence = _.get("encoding"), _.get("confidence")
+            if encoding == "ascii":
+                encoding = "utf8"
         if confidence < min_confidence:
             encoding = "utf8"
     except:
@@ -127,8 +130,6 @@ def restart_real_live():
     p.startDetached(qApp.applicationFilePath())
 
 
-
-
 def is_user_admin():
     """ 检查admin """
     return ctypes.windll.shell32.IsUserAnAdmin()
@@ -138,10 +139,16 @@ def run_as_admin(args):
     """ 管理员运行 """
     script = os.path.abspath(sys.argv[0])
     # args = ' '.join(sys.argv[1:]) if len(sys.argv) > 1 else ''
-    print(f"{script} {args}")
-    ShellExecuteEx(lpFile=sys.executable, lpParameters=f"{script} {args}",
-                   nShow=1, lpVerb='runas')
-    return
+    # logger.info(f"{script} {args}")
+    # logger.info(sys.executable)
+    try:
+        ShellExecuteEx(lpFile=sys.executable, lpParameters=f"{script} {args}",
+                       nShow=1, lpVerb='runas')
+        logger.info(args + "：操作成功")
+        return True
+    except:
+        logger.info(args + "：操作失败")
+        return False
 
 
 def create_right_menu(name, icon, command, content=None, type_="DIRECTORY_BACKGROUND"):
@@ -189,9 +196,9 @@ def create_shortcut(bin_path: str, name: str, desc: str, icon: str = None):
             )
         return True
     except ImportError as err:
-        print("Well, do nothing as 'winshell' lib may not available on current os")
-        print("error detail %s" % str(err))
-    return False
+        logger.info("Well, do nothing as 'winshell' lib may not available on current os")
+        logger.info("error detail %s" % str(err))
+        return False
 
 
 def get_text(file_suffix, file_absolute_path, file_md5, temp_path, antiword_path) -> str:
@@ -200,7 +207,8 @@ def get_text(file_suffix, file_absolute_path, file_md5, temp_path, antiword_path
         text = docx2txt.process(file_absolute_path)
     elif file_suffix == ".doc":
         temp_docx_path = os.path.abspath(os.path.join(temp_path, file_md5 + ".docx"))
-        text = doc2txt.process(doc_path=file_absolute_path, temp_docx_path=temp_docx_path, antiword_path=antiword_path,antiword_try_wrap=True)
+        text = doc2txt.process(doc_path=file_absolute_path, temp_docx_path=temp_docx_path, antiword_path=antiword_path,
+                               antiword_try_wrap=True)
     elif file_suffix == ".xls":
         temp_xlsx_path = os.path.abspath(os.path.join(temp_path, file_md5 + ".xlsx"))
         text = xls2txt.process(file_absolute_path, temp_xlsx_path)
@@ -211,4 +219,13 @@ def get_text(file_suffix, file_absolute_path, file_md5, temp_path, antiword_path
     elif file_suffix == ".txt":
         with open(file_absolute_path, "r", encoding=detect_encoding(file_absolute_path), errors='ignore') as f:
             text = f.read()
+    elif file_suffix == ".pptx":
+        text = pptx2txt.process(file_absolute_path)
+    elif file_suffix == ".ppt":
+        temp_pptx_path = os.path.abspath(os.path.join(temp_path, file_md5 + ".pptx"))
+        text = ppt2txt.process(file_absolute_path, temp_pptx_path)
+    elif file_suffix == ".epub":
+        text = epub2txt.process(file_absolute_path)
+    elif file_suffix == ".mobi":
+        text = mobi2txt.process(file_absolute_path)
     return text

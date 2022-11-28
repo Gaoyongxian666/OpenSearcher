@@ -1,6 +1,8 @@
 import hashlib
+import logging
 import os
 import traceback
+import warnings
 from queue import Queue
 
 import psutil
@@ -12,6 +14,7 @@ from qcustomdialog import index
 from qutils.util import file_name_list, get_text
 
 
+
 class IndexWindow(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -20,7 +23,9 @@ class IndexWindow(QMainWindow):
         self.setWindowTitle("建立索引")
 
         self.CurPath = parent.CurPath
-        self.IconPath = parent.IconPath
+        self.IconDir = parent.IconDir
+        self.logger=parent.logger
+
         self._limit_file_size = parent._limit_file_size
         self.search_running = False
         self.queue = Queue()
@@ -55,16 +60,25 @@ class IndexWindow(QMainWindow):
                  "Microsoft Word 文件（.docx）",
                  "Microsoft Excel 97-2003 文件（.xls）",
                  "Microsoft Excel 文件（.xlsx）",
-                 "PDF 文件（.pdf）",
+                 "Microsoft PowerPoint 97-2003 文件（.ppt）",
+                 "Microsoft PowerPoint 文件（.pptx）",
+                 "Adobe PDF 文件（.pdf）",
+                 "EPUB 文件（.epub）",
+                 "MOBI 文件（.mobi）",
                  ]
-        items_icon = [os.path.abspath(os.path.join(self.IconPath, 'doc.png')),
-                      os.path.abspath(os.path.join(self.IconPath, 'docx.png')),
-                      os.path.abspath(os.path.join(self.IconPath, 'xls.png')),
-                      os.path.abspath(os.path.join(self.IconPath, 'xlsx.png')),
-                      os.path.abspath(os.path.join(self.IconPath, 'pdf.png'))]
+        items_icon = [os.path.abspath(os.path.join(self.IconDir, 'doc.png')),
+                      os.path.abspath(os.path.join(self.IconDir, 'docx.png')),
+                      os.path.abspath(os.path.join(self.IconDir, 'xls.png')),
+                      os.path.abspath(os.path.join(self.IconDir, 'xlsx.png')),
+                      os.path.abspath(os.path.join(self.IconDir, 'ppt.png')),
+                      os.path.abspath(os.path.join(self.IconDir, 'pptx.png')),
+                      os.path.abspath(os.path.join(self.IconDir, 'pdf.png')),
+                      os.path.abspath(os.path.join(self.IconDir, 'epub.png')),
+                      os.path.abspath(os.path.join(self.IconDir, 'mobi.png')),
+                      ]
         first_item = '全部文件类型'
-        first_item_icon = os.path.abspath(os.path.join(self.IconPath, 'sysfile.png'))
-        line_edit_icon = os.path.abspath(os.path.join(self.IconPath, 'sysfile.png'))
+        first_item_icon = os.path.abspath(os.path.join(self.IconDir, 'sysfile.png'))
+        line_edit_icon = os.path.abspath(os.path.join(self.IconDir, 'sysfile.png'))
 
         self.child.comboBox_2.InitComboBox(
             line_edit_icon=line_edit_icon,
@@ -80,7 +94,7 @@ class IndexWindow(QMainWindow):
 
     def complete(self, device_list):
         items = device_list
-        disk_png = os.path.abspath(os.path.join(self.CurPath, "icon/disk.png"))
+        disk_png = os.path.abspath(os.path.join(self.IconDir, "disk.png"))
         items_icon = [disk_png for i in range(len(device_list))]
         first_item = '全部磁盘'
         first_item_icon = disk_png
@@ -129,7 +143,6 @@ class IndexWindow(QMainWindow):
             self.child.textBrowser.append("搜索目录：" + str(self.Dirs_list))
             self.child.textBrowser.append("搜索类型：" + str(self.screen))
             self.child.textBrowser.append("文件限制：" + str(self._limit_file_size) + "M")
-
             self.child.textBrowser.append("由于磁盘文件较多，读取文件列表耗时较长，请耐心等待······")
 
             self.search_thread = SearchThread(
@@ -145,7 +158,7 @@ class IndexWindow(QMainWindow):
         try:
             self.search_thread.terminate()
         except:
-            print(traceback.format_exc())
+            self.logger.info(traceback.format_exc())
 
 
 class RelayUpdateThread(QThread):
@@ -178,7 +191,6 @@ class SearchThread(QThread):
         self.file_name_lists = []
         self.icon_dir = os.path.abspath(os.path.join(self.CurPath, 'icon'))
         self.antiword_path = os.path.abspath(os.path.join(self.CurPath, 'antiword/antiword.exe'))
-
 
     def run(self):
         pythoncom.CoInitialize()

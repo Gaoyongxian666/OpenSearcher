@@ -14,10 +14,10 @@ class UpdateWindow(QMainWindow):
         self.child = update.Ui_MainWindow()
         self.child.setupUi(self)
 
-        self.version = parent.version
+        self.version = parent.Version
         self.logger = parent.logger
         self.CurPath = parent.CurPath
-        self.update_url = parent.update_url
+        self.update_url = parent.UpdateUrl
         self.software_url = ""
 
         self.setWindowTitle("检查更新")

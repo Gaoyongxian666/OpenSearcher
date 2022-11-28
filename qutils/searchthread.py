@@ -81,7 +81,7 @@ class SearchThread(QThread):
                     self.logger.info("写入完成:" + temp_md5_path + "\n")
                     return 1
                 else:
-                    self.logger.info("没找到\n")
+                    self.logger.info("写入完成:" +"没找到\n")
                     return 2
             except:
                 self.logger.info("处理文件时发生错误")

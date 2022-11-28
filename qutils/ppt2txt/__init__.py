@@ -1,0 +1,1 @@
+from .ppt2txt import process
