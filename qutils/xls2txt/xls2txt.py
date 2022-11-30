@@ -35,23 +35,25 @@ def _xls2txt(xls_path):
 def xls2txt(xls_path, temp_xlsx_path) -> str:
     try:
         try:
-            excel = wc.Dispatch("Excel.Application")
+            excel = wc.DispatchEx("Excel.Application")
         except:
             logger.info(traceback.format_exc())
             try:
-                excel = wc.Dispatch("kwps.Application")
+                excel = wc.DispatchEx("kwps.Application")
             except:
                 logger.info(traceback.format_exc())
                 try:
-                    excel = wc.Dispatch("wps.Application")
+                    excel = wc.DispatchEx("wps.Application")
                 except:
                     logger.info(traceback.format_exc())
                     logger.info("未发现excel组件，将无法查找老版的xls文件")
                     # warnings.warn("未发现excel组件，将无法查找老版的xls文件", RuntimeWarning)
                     raise
-        doc = excel.Workbooks.Open(xls_path)
-        doc.SaveAs(temp_xlsx_path, 51)
-        doc.Close()
+        excel.Visible = 0  # 后台运行,不显示
+        excel.DisplayAlerts = 0  # 不警告
+        xls = excel.Workbooks.Open(xls_path, ReadOnly=True, IgnoreReadOnlyRecommended=True, Notify=False)
+        xls.SaveAs(temp_xlsx_path, 51)
+        xls.Close()
         excel.Quit()
         time.sleep(2)
         text = xlsx2txt.process(temp_xlsx_path)

@@ -57,5 +57,4 @@ class RelayUpdateThread(QThread):
         except:
             with open(self.filepath, encoding='utf-8') as f:
                 txt = f.read()
-        print(txt)
         self.complete.emit(txt)

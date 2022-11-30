@@ -67,6 +67,12 @@ class QTextFrame(QFrame):
         else:
             self.child.preview.nowrap()
 
+    def setText(self,l):
+        self.child.preview.setPlainText(l)
+
+    def setMar(self, l):
+        self.child.preview.insertPlainText(l)
+
     def CheckBoxLineWrap(self):
         if self.child.linewrap.isChecked():
             self.child.preview.wrap()
@@ -183,12 +189,9 @@ class QTextFrame(QFrame):
         self.child.preview.setReadOnly(Flag)
 
     def zoomIn(self, i: int):
+        # self.fontsize 和 self.child.preview.font().pointSize()一样
         self.fontsize = self.fontsize + i
-        print(self.fontsize)
-        print(self.child.preview.font().pointSize())
-        print("---------------------------------------------------")
         self.child.preview.zoomIn(i)
-        print(self.child.preview.font().pointSize())
         self.mysetting_dict["_fontsize"] = self.child.preview.font().pointSize()
 
     def clear(self):

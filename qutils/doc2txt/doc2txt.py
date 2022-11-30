@@ -58,25 +58,32 @@ def _doc2txt(doc_path, antiword_try_wrap: bool, antiword_path) -> str:
         raise
 
 
+
 def doc2txt(doc_path, temp_docx_path) -> str:
     try:
         try:
             # 用来将dox转docx，注意:如果安装WPS，它会篡改office的COM接口，改成指向它，并且WPS在合并模式下，无法后台操作
             # 尝试多方式启动
-            word = wc.Dispatch("Word.Application")
+            word = wc.DispatchEx("Word.Application")
+            print(word)
         except:
             logger.info(traceback.format_exc())
             try:
-                word = wc.Dispatch("kwps.Application")
+                word = wc.DispatchEx("kwps.Application")
             except:
                 logger.info(traceback.format_exc())
                 try:
-                    word = wc.Dispatch("wps.Application")
+                    word = wc.DispatchEx("wps.Application")
                 except:
                     logger.info(traceback.format_exc())
                     logger.info("未发现WORD组件，将无法查找老版的doc文件")
                     raise
-        doc = word.Documents.Open(doc_path, ReadOnly=True)
+        word.Visible = 0  # 后台运行,不显示
+        word.DisplayAlerts = 0  # 不警告
+        # tr = Timer(5, info)
+        # tr.start()
+        doc = word.Documents.Open(doc_path, False, ReadOnly=True, Visible=False, OpenAndRepair=False,
+                                  NoEncodingDialog=True)
         doc.SaveAs(temp_docx_path, 12)
         doc.Close()
         word.Quit()

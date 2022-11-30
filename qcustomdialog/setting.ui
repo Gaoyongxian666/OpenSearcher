@@ -282,7 +282,7 @@
               <number>0</number>
              </property>
              <item>
-              <widget class="QCheckBox" name="checkBox_last_screen">
+              <widget class="QCheckBox" name="checkBox_last_types">
                <property name="font">
                 <font>
                  <pointsize>11</pointsize>

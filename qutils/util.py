@@ -1,13 +1,15 @@
-import io
 import logging
 import time
 import os
 import sys
+import traceback
 import warnings
 import winreg
 import ctypes
 import chardet
 import docx2txt
+import win32api
+import win32con
 import winshell
 from PyQt5.QtWidgets import qApp
 
@@ -19,28 +21,61 @@ import win32clipboard
 from ctypes import *
 from win32comext.shell.shell import ShellExecuteEx
 
-logger=logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
-def file_name_list(file_dir: str, screen: list, icon_dir: str = "icon", size_limit=100) -> list:
+
+def contains_same_path(path, pathlist):
+    for p in pathlist:
+        if os.path.samefile(path, p):
+            logger.info("找到相同路径：" + p)
+            return True
+    return False
+
+
+def getparentlist(path, pathlist):
+    """返回pathlist所有父路径"""
+    parentlist = []
+    for path_ in pathlist:
+        if os.path.realpath(path).startswith(os.path.realpath(path_) + os.sep):
+            parentlist.append(path_)
+    logger.info("寻找父路径："+path+"存在父路径"+str(parentlist))
+    return parentlist
+
+
+def getsublist(path, pathlist):
+    """返回pathlist所有子路径"""
+    sublist = []
+    for path_ in pathlist:
+        if os.path.realpath(path_).startswith(os.path.realpath(path) + os.sep):
+            sublist.append(path_)
+    logger.info("寻找子路径："+path+"存在子路径"+str(sublist))
+    return sublist
+
+
+def file_name_list(dir_path: str, types: list, exclude=None, icon_dir: str = "icon", size_limit=100) -> list:
     """返回指定类型的文件列表"""
+    if exclude is None:
+        exclude = []
     L = []
-    for root, dirs, files in os.walk(file_dir):
-        for file in files:
-            if "~$" not in file:
-                filename = os.path.splitext(file)
-                filename_ = filename[0]
-                suffix = filename[1]
-                if suffix in screen and filename_[0] != "$":
-                    absolute_path = os.path.abspath(os.path.join(root, file))
-                    modifytime = time.strftime("%Y年%m月%d日 %H:%M:%S", time.localtime(os.path.getmtime(absolute_path)))
-                    icon_ = QIcon(os.path.abspath(os.path.join(icon_dir, "%s.png" % suffix[1:])))
-                    if os.path.getsize(absolute_path) < size_limit * 1024 * 1024:
-                        L.append([(icon_, file), (None, getDocSize(absolute_path)),
-                                  (None, modifytime), (None, absolute_path), (None, suffix)])
-                    else:
-                        logger.info("文件太大：" + absolute_path)
-                        logger.info(getDocSize(absolute_path))
-
+    if len(getparentlist(dir_path, exclude)) == 0 and not contains_same_path(dir_path, exclude):
+        for root, dirs, files in os.walk(dir_path, topdown=True):
+            dirs[:] = [d for d in dirs if not contains_same_path(os.path.abspath(os.path.join(root, d)), exclude)]
+            for file in files:
+                if "~$" not in file:
+                    filename = os.path.splitext(file)
+                    filename_ = filename[0]
+                    suffix = filename[1]
+                    if suffix in types and filename_[0] != "$":
+                        absolute_path = os.path.abspath(os.path.join(root, file))
+                        modifytime = time.strftime("%Y年%m月%d日 %H:%M:%S",
+                                                   time.localtime(os.path.getmtime(absolute_path)))
+                        icon_ = QIcon(os.path.abspath(os.path.join(icon_dir, "%s.png" % suffix[1:])))
+                        if os.path.getsize(absolute_path) < size_limit * 1024 * 1024:
+                            L.append([(icon_, file), (None, getDocSize(absolute_path)),
+                                      (None, modifytime), (None, absolute_path), (None, suffix)])
+                        else:
+                            logger.info("文件太大：" + absolute_path)
+                            logger.info(getDocSize(absolute_path))
     return L
 
 
@@ -130,27 +165,6 @@ def restart_real_live():
     p.startDetached(qApp.applicationFilePath())
 
 
-def is_user_admin():
-    """ 检查admin """
-    return ctypes.windll.shell32.IsUserAnAdmin()
-
-
-def run_as_admin(args):
-    """ 管理员运行 """
-    script = os.path.abspath(sys.argv[0])
-    # args = ' '.join(sys.argv[1:]) if len(sys.argv) > 1 else ''
-    # logger.info(f"{script} {args}")
-    # logger.info(sys.executable)
-    try:
-        ShellExecuteEx(lpFile=sys.executable, lpParameters=f"{script} {args}",
-                       nShow=1, lpVerb='runas')
-        logger.info(args + "：操作成功")
-        return True
-    except:
-        logger.info(args + "：操作失败")
-        return False
-
-
 def create_right_menu(name, icon, command, content=None, type_="DIRECTORY_BACKGROUND"):
     """ 创建右键菜单:icon 设置成执行文件也可以读取图标"""
     key_root = winreg.HKEY_CLASSES_ROOT
@@ -201,6 +215,59 @@ def create_shortcut(bin_path: str, name: str, desc: str, icon: str = None):
         return False
 
 
+def is_user_admin():
+    """ 检查admin """
+    return ctypes.windll.shell32.IsUserAnAdmin()
+
+
+def run_as_admin(args):
+    """ 管理员运行 """
+    script = os.path.abspath(sys.argv[0])
+    # args = ' '.join(sys.argv[1:]) if len(sys.argv) > 1 else ''
+    # logger.info(f"{script} {args}")
+    # logger.info(sys.executable)
+    try:
+        ShellExecuteEx(lpFile=sys.executable, lpParameters=f"{script} {args}",
+                       nShow=1, lpVerb='runas')
+        logger.info(script + args + "：管理员运行，操作成功")
+        return True
+    except:
+        logger.info(script + args + "：管理员运行，操作失败")
+        return False
+
+
+def set_auto(name, exe_path):
+    try:
+        # path = os.path.abspath(os.path.join(self.CurPath, "OpenSearcher.exe"))
+        KeyName = r"SOFTWARE\Microsoft\Windows\CurrentVersion\Run"
+        key = win32api.RegOpenKey(win32con.HKEY_CURRENT_USER, KeyName, 0, win32con.KEY_ALL_ACCESS)
+        win32api.RegSetValueEx(key, name, 0, win32con.REG_SZ, exe_path)
+        logger.info('成功开启软件自启动')
+        return True
+    except:
+        win32api.MessageBox(0, traceback.format_exc(), name, win32con.MB_OK)
+        logger.info(traceback.format_exc())
+        return False
+
+
+def set_right_menu(name, content, icon, exe_path):
+    if not is_user_admin():
+        return run_as_admin("set_menu")
+    else:
+        try:
+            create_right_menu(name=name, content=content, icon=icon,
+                              command=exe_path + " \"%L\"",
+                              type_="DIRECTORY")
+            create_right_menu(name=name, content=content + " 搜索", icon=icon,
+                              command=exe_path + " \"%W\"",
+                              type_="DIRECTORY_BACKGROUND")
+            return True
+        except Exception:
+            win32api.MessageBox(0, traceback.format_exc(), name, win32con.MB_OK)
+            logger.info(traceback.format_exc())
+            return False
+
+
 def get_text(file_suffix, file_absolute_path, file_md5, temp_path, antiword_path) -> str:
     """转字符串返回处理结果"""
     if file_suffix == ".docx":
@@ -229,3 +296,10 @@ def get_text(file_suffix, file_absolute_path, file_md5, temp_path, antiword_path
     elif file_suffix == ".mobi":
         text = mobi2txt.process(file_absolute_path)
     return text
+
+
+if __name__ == "__main__":
+    # print(file_name_list(r"C:\Users\Gaoyongxian\Documents\GitHub\OpenSearcher", types=[".txt"]))
+    # print(contains_same_path(r'C:/Users/Gaoyongxian/Downloads',
+    #                          ['C:\\Users\\Gaoyongxian\\Downloads', 'C:\\Users\\Gaoyongxian\\Documents\\AnLink']))
+    print(contains_same_path(r"C:/Users/Gaoyongxian/Documents", [r"C:\Users\Gaoyongxian\Documents",r"C:\Users\Gaoyongxian"]))

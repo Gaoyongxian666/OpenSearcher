@@ -14,24 +14,25 @@ logger = logging.getLogger(__name__)
 def process(ppt_path, temp_pptx_path) -> str:
     try:
         try:
-            ppt = wc.Dispatch("PowerPoint.Application")
+            powerpoint = wc.DispatchEx("PowerPoint.Application")
         except:
             logger.info(traceback.format_exc())
             try:
-                ppt = wc.Dispatch("kwps.Application")
+                powerpoint = wc.DispatchEx("kwps.Application")
             except:
                 logger.info(traceback.format_exc())
                 try:
-                    ppt = wc.Dispatch("wps.Application")
+                    powerpoint = wc.DispatchEx("wps.Application")
                 except:
                     logger.info(traceback.format_exc())
                     warnings.warn("未发现ppt组件，将无法查找老版的xls文件", RuntimeWarning)
                     raise
+        powerpoint.DisplayAlerts = 0  # 不警告
         # https://learn.microsoft.com/zh-cn/office/vba/api/PowerPoint.Presentations.Open
-        doc = ppt.Presentations.Open(ppt_path, ReadOnly=True, WithWindow=False)
-        doc.SaveAs(temp_pptx_path)
-        doc.Close()
-        ppt.Quit()
+        ppt = powerpoint.Presentations.Open(ppt_path, ReadOnly=True, WithWindow=False)
+        ppt.SaveAs(temp_pptx_path)
+        ppt.Close()
+        powerpoint.Quit()
         time.sleep(2)
         text = pptx2txt.process(temp_pptx_path)
         os.remove(temp_pptx_path)

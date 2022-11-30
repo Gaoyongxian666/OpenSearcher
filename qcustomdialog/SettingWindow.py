@@ -1,27 +1,28 @@
+import logging
 import os
 import sys
 import traceback
-
 import win32api
 import win32con
 from PyQt5.QtWidgets import QMainWindow
 from qcustomdialog import setting
 from qutils.util import is_user_admin, run_as_admin, create_right_menu, remove_right_menu, create_shortcut
 
+logger=logging.getLogger(__name__)
 
 class SettingWindow(QMainWindow):
-    def __init__(self, parent_window=None):
-        super().__init__(parent_window)
-        self.mysetting_dict = parent_window.mysetting_dict
-        self.queue = parent_window.queue
-        self.parent_window = parent_window
-        self.CurPath = parent_window.CurPath
-        self.Name = parent_window.Name
-        self.Name_ = parent_window.Name_
-        self.LogoPath = parent_window.LogoPath
-        self.ExePath = parent_window.ExePath
-        self.LnkPath = parent_window.LnkPath
-        self.LnkPath2 = parent_window.LnkPath2
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.mysetting_dict = parent.mysetting_dict
+        self.queue = parent.queue
+        self.parent = parent
+        self.CurPath = parent.CurPath
+        self.Name = parent.Name
+        self.Name_ = parent.Name_
+        self.LogoPath = parent.LogoPath
+        self.ExePath = parent.ExePath
+        self.LnkPath = parent.LnkPath
+        self.LnkPath2 = parent.LnkPath2
 
         self.child = setting.Ui_MainWindow()
         self.child.setupUi(self)
@@ -35,7 +36,7 @@ class SettingWindow(QMainWindow):
         self.child.checkBox_desktop.setChecked(self.mysetting_dict["_desktop"])
         self.child.checkBox_remind.setChecked(self.mysetting_dict["_remind"])
         self.child.checkBox_last_dir.setChecked(self.mysetting_dict["_last_dir_flag"])
-        self.child.checkBox_last_screen.setChecked(self.mysetting_dict["_last_screen_flag"])
+        self.child.checkBox_last_types.setChecked(self.mysetting_dict["_last_types_flag"])
         self.child.groupBox_auto_run.setChecked(self.mysetting_dict["_auto_run"])
         self.child.groupBox_right_menu.setChecked(self.mysetting_dict["_right_menu"])
 
@@ -46,7 +47,7 @@ class SettingWindow(QMainWindow):
         self.child.checkBox_show_all.stateChanged.connect(self.checkBox_show_all)
         self.child.checkBox_remind.stateChanged.connect(self.checkBox_remind)
         self.child.checkBox_last_dir.stateChanged.connect(self.checkBox_last_dir)
-        self.child.checkBox_last_screen.stateChanged.connect(self.checkBox_last_screen)
+        self.child.checkBox_last_types.stateChanged.connect(self.checkBox_last_types)
         self.child.checkBox_desktop.stateChanged.connect(self.checkBox_desktop)
         self.child.spinBox_limit_file_size.valueChanged.connect(self.spinBox_limit_file_size)
 
@@ -85,7 +86,6 @@ class SettingWindow(QMainWindow):
 
         except:
             win32api.MessageBox(0, traceback.format_exc(), self.Name_, win32con.MB_OK)
-
             return False
 
     def groupBox_right_menu(self):
@@ -129,34 +129,25 @@ class SettingWindow(QMainWindow):
                 return False
 
     def checkBox_show_all(self):
-        if self.child.checkBox_show_all.isChecked():
-            self.parent_window._show_all = True
-        else:
-            self.parent_window._show_all = False
-            self.queue.put(("_show_all", 0))
+        self.queue.put(("_show_all", self.child.checkBox_show_all.isChecked()))
         self.mysetting_dict["_show_all"] = self.child.checkBox_show_all.isChecked()
 
     def checkBox_last_dir(self):
         self.mysetting_dict["_last_dir_flag"] = self.child.checkBox_last_dir.isChecked()
 
-    def checkBox_last_screen(self):
-        self.mysetting_dict["_last_screen_flag"] = self.child.checkBox_last_screen.isChecked()
+    def checkBox_last_types(self):
+        self.mysetting_dict["_last_types_flag"] = self.child.checkBox_last_types.isChecked()
 
     def checkBox_desktop(self):
         if self.child.checkBox_desktop.isChecked():
             if not os.path.exists(self.LnkPath) and not os.path.exists(self.LnkPath2):
-                print("桌面没有创建快捷方式")
+                logger.info("桌面没有创建快捷方式")
                 create_shortcut(sys.argv[0], self.Name_, "一个开源的、本地的、安全的、支持全文检索的搜索器。", self.LogoPath)
         self.mysetting_dict["_desktop"] = self.child.checkBox_desktop.isChecked()
 
     def checkBox_remind(self):
-        if self.child.checkBox_remind.isChecked():
-            self.parent_window._remind = True
-        else:
-            self.parent_window._remind = False
         self.mysetting_dict["_remind"] = self.child.checkBox_remind.isChecked()
 
     def spinBox_limit_file_size(self):
         _limit_file_size = self.child.spinBox_limit_file_size.value()
-        self.parent_window._limit_file_size = _limit_file_size
         self.mysetting_dict["_limit_file_size"] = _limit_file_size

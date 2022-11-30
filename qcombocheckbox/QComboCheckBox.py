@@ -1,3 +1,4 @@
+from PyQt5.QtCore import QSize
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QComboBox, QLineEdit, QListWidget, QCheckBox, QListWidgetItem
 from PyQt5 import QtWidgets, QtCore
@@ -14,8 +15,7 @@ class QComboCheckBox(QComboBox):
         for i, check in enumerate(_check_list):
             self.qCheckBox[i + 1].setChecked(check)
 
-    def InitComboBox(self, line_edit_icon: str, first_item: str, first_item_icon: str, items: list, items_icon: list):
-
+    def InitComboBox(self, first_item: str, first_item_icon: str, items: list, items_icon: list):
         self.items = items
         self.items_icon = items_icon
 
@@ -39,11 +39,10 @@ class QComboCheckBox(QComboBox):
         self.setModel(self.qListWidget.model())
         self.setView(self.qListWidget)
         self.setLineEdit(self.qLineEdit)
-        self.qListWidget.setStyleSheet("margin-left: 5px;")
         self.qListWidget.setSpacing(0)
-
-        self.qLineEdit.addAction(QIcon(line_edit_icon), QLineEdit.LeadingPosition)
+        self.qLineEdit.addAction(QIcon(first_item_icon), QLineEdit.LeadingPosition)
         self.UpdateComboBox(_len=len(self.items) - 1)
+        self.setStyleSheet("QListWidget::item {margin-left: 5px;height:27px;}")
 
     def getState(self):
         all_list = []
@@ -52,7 +51,9 @@ class QComboCheckBox(QComboBox):
         return all_list
 
     def addQCheckBox(self, i):
-        self.qCheckBox.append(QCheckBox())
+        q = QCheckBox()
+        q.setIconSize(QSize(27, 27))
+        self.qCheckBox.append(q)
         qItem = QListWidgetItem(self.qListWidget)
         item_txt = self.items[i]
         for a in range(2):
