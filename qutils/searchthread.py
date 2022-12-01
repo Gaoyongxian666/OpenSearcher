@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 class SearchThread(QThread):
     def __init__(self, DirPaths: list, CurPath, types, logger, queue, _limit_file_size,
-                 _exclude_dir, show_all=False, keywords=None):
+                 _exclude_dir, show_all=False, keywords=None, _limit_office_time=5):
         super().__init__()
         self.DirPaths = DirPaths
         self.CurPath = CurPath
@@ -20,12 +20,15 @@ class SearchThread(QThread):
         self.keywords = keywords
         self.logger = logger
         self.queue = queue
+
+        self._limit_office_time = _limit_office_time
         self._limit_file_size = _limit_file_size
         self._exclude_dir = _exclude_dir
         self.show_all = show_all
+        self.file_name_lists = []
+
         self.temp_path = os.path.abspath(os.path.join(self.CurPath, '.temp'))
         self.error_temp_path = os.path.abspath(os.path.join(self.CurPath, '.errortemp'))
-        self.file_name_lists = []
         self.icon_dir = os.path.abspath(os.path.join(self.CurPath, 'icon'))
         self.antiword_path = os.path.abspath(os.path.join(self.CurPath, 'antiword/antiword.exe'))
 
@@ -91,7 +94,8 @@ class SearchThread(QThread):
         else:
             try:
                 text = get_text(file_suffix=file_suffix, file_absolute_path=absolute_path, file_md5=file_md5,
-                                temp_path=self.temp_path, antiword_path=self.antiword_path)
+                                temp_path=self.temp_path, antiword_path=self.antiword_path,
+                                _limit_office_time=self._limit_office_time)
                 with open(temp_md5_path, 'w', encoding='utf8') as f:
                     f.write(text)
                 self.logger.info("写入完成:" + temp_md5_path + "\n")
@@ -112,4 +116,3 @@ class SearchThread(QThread):
                 with open(error_temp_md5_path, 'w', encoding="utf8") as f:
                     f.write(absolute_path + "\n\n" + traceback.format_exc())
                 return 0
-

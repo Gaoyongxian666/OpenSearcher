@@ -128,7 +128,8 @@ class IndexWindow(QMainWindow):
                 logger=self.logger,
                 queue=self.queue,
                 _limit_file_size=self.mysetting_dict["_limit_file_size"],
-                _exclude_dir=self.mysetting_dict['_exclude_dir']
+                _exclude_dir=self.mysetting_dict['_exclude_dir'],
+                _limit_office_time=self.mysetting_dict['_limit_office_time']
             )
             self.search_thread.start()
             self.child.pushButton.setText("停止")

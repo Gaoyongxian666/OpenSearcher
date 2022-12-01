@@ -4,15 +4,13 @@ import socket
 import sys
 import traceback
 from queue import Queue
-
-import pythoncom
 import win32api
 import win32con
 import winshell
 from PyQt5 import QtCore
 from PyQt5.QtCore import QModelIndex, QThread, pyqtSignal, QTimer, QProcess, QSettings, Qt
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QDesktopWidget, QMessageBox, qApp
+from PyQt5.QtWidgets import QApplication, QMainWindow, QDesktopWidget, QMessageBox, qApp
 from sqlitedict import SqliteDict
 from qcustomdialog.FileWindow import FileWindow
 from qcustomdialog.HelpWindow import HelpWindow
@@ -23,8 +21,7 @@ from MainWindow import Ui_MainWindow
 from qutils.searchthread import SearchThread
 from qutils.traythread import TrayThread
 import logging
-from qutils.util import is_user_admin, run_as_admin, create_right_menu, remove_right_menu, create_shortcut, set_auto, \
-    set_right_menu
+from qutils.util import create_right_menu, remove_right_menu, create_shortcut, set_auto, set_right_menu
 
 logger = logging.getLogger(__name__)
 
@@ -63,9 +60,9 @@ class MainWindow(QMainWindow):
 
 1. 利用空闲时间，提前建立索引缓存很重要，将大大加快之后的搜索。
 
-2. 在第一次搜索某个文件目录时，搜索速度或许不是很快，但是下次搜索相同目录将会很快。
+2. 在第一次搜索某个文件目录时，搜索速度或许很慢，但是下次搜索相同目录将会很快。
 
-3. 在搜索进行中，请尽量关闭正在打开的word、excel、ppt文档，退出Microsoft Office或WPS Office程序。'''
+3. 在搜索进行中，必须退出正在打开的word、excel、ppt文档，因为本程序强行关闭Office可能会影响你的文档。'''
 
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
@@ -503,6 +500,7 @@ class MainWindow(QMainWindow):
                     queue=self.queue,
                     show_all=self.mysetting_dict['_show_all'],
                     _limit_file_size=_limit_file_size,
+                    _limit_office_time=self.mysetting_dict['_limit_office_time'],
                     _exclude_dir=_exclude_dir
                 )
                 self.search_thread.start()
@@ -547,6 +545,7 @@ class RelayUpdateThread(QThread):
             self.mysetting_dict['_remind'] = True
             self.mysetting_dict['_show_all'] = False
             self.mysetting_dict['_limit_file_size'] = 100
+            self.mysetting_dict['_limit_office_time'] = 5
             self.mysetting_dict['_fontsize'] = 10
             self.mysetting_dict['_fontfamily'] = "宋体"
             self.mysetting_dict['_linewrap'] = True
@@ -570,7 +569,7 @@ def main():
 
     Name = "OpenSearcher"
     Name_ = "Open Searcher"
-    Version = "0.0.6"
+    Version = "0.0.7"
     UpdateUrl = "https://aidcs-1256440297.cos.ap-beijing.myqcloud.com/OpenSearcher/update.txt"
 
     CurPath = os.path.dirname(os.path.abspath(sys.argv[0]))
@@ -600,6 +599,9 @@ def main():
             except Exception:
                 win32api.MessageBox(0, traceback.format_exc(), Name_, win32con.MB_OK)
             return
+        elif sys.argv[-1][-4:] == ".exe":
+            print("当前重启")
+            DirPath = None
         else:
             DirPath = sys.argv[-1]
     else:

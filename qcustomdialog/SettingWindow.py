@@ -8,7 +8,8 @@ from PyQt5.QtWidgets import QMainWindow
 from qcustomdialog import setting
 from qutils.util import is_user_admin, run_as_admin, create_right_menu, remove_right_menu, create_shortcut
 
-logger=logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
+
 
 class SettingWindow(QMainWindow):
     def __init__(self, parent=None):
@@ -32,6 +33,8 @@ class SettingWindow(QMainWindow):
 
     def Init(self):
         self.child.spinBox_limit_file_size.setValue(self.mysetting_dict["_limit_file_size"])
+        self.child.spinBox_limit_office_time.setValue(self.mysetting_dict["_limit_office_time"])
+
         self.child.checkBox_show_all.setChecked(self.mysetting_dict["_show_all"])
         self.child.checkBox_desktop.setChecked(self.mysetting_dict["_desktop"])
         self.child.checkBox_remind.setChecked(self.mysetting_dict["_remind"])
@@ -50,6 +53,7 @@ class SettingWindow(QMainWindow):
         self.child.checkBox_last_types.stateChanged.connect(self.checkBox_last_types)
         self.child.checkBox_desktop.stateChanged.connect(self.checkBox_desktop)
         self.child.spinBox_limit_file_size.valueChanged.connect(self.spinBox_limit_file_size)
+        self.child.spinBox_limit_office_time.valueChanged.connect(self.spinBox_limit_office_time)
 
     def groupBox_auto_run(self):
         if self.child.groupBox_auto_run.isChecked():
@@ -151,3 +155,7 @@ class SettingWindow(QMainWindow):
     def spinBox_limit_file_size(self):
         _limit_file_size = self.child.spinBox_limit_file_size.value()
         self.mysetting_dict["_limit_file_size"] = _limit_file_size
+
+    def spinBox_limit_office_time(self):
+        _limit_office_time = self.child.spinBox_limit_office_time.value()
+        self.mysetting_dict["_limit_office_time"] = _limit_office_time

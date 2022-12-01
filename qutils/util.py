@@ -10,6 +10,8 @@ import chardet
 import docx2txt
 import win32api
 import win32con
+import win32gui
+import win32process
 import winshell
 from PyQt5.QtWidgets import qApp
 
@@ -268,17 +270,18 @@ def set_right_menu(name, content, icon, exe_path):
             return False
 
 
-def get_text(file_suffix, file_absolute_path, file_md5, temp_path, antiword_path) -> str:
+
+def get_text(file_suffix, file_absolute_path, file_md5, temp_path, antiword_path,_limit_office_time) -> str:
     """转字符串返回处理结果"""
     if file_suffix == ".docx":
         text = docx2txt.process(file_absolute_path)
     elif file_suffix == ".doc":
         temp_docx_path = os.path.abspath(os.path.join(temp_path, file_md5 + ".docx"))
         text = doc2txt.process(doc_path=file_absolute_path, temp_docx_path=temp_docx_path, antiword_path=antiword_path,
-                               antiword_try_wrap=True)
+                               antiword_try_wrap=True,_limit_office_time=_limit_office_time)
     elif file_suffix == ".xls":
         temp_xlsx_path = os.path.abspath(os.path.join(temp_path, file_md5 + ".xlsx"))
-        text = xls2txt.process(file_absolute_path, temp_xlsx_path)
+        text = xls2txt.process(file_absolute_path, temp_xlsx_path,_limit_office_time=_limit_office_time)
     elif file_suffix == ".xlsx":
         text = xlsx2txt.process(file_absolute_path)
     elif file_suffix == ".pdf":
@@ -290,7 +293,7 @@ def get_text(file_suffix, file_absolute_path, file_md5, temp_path, antiword_path
         text = pptx2txt.process(file_absolute_path)
     elif file_suffix == ".ppt":
         temp_pptx_path = os.path.abspath(os.path.join(temp_path, file_md5 + ".pptx"))
-        text = ppt2txt.process(file_absolute_path, temp_pptx_path)
+        text = ppt2txt.process(file_absolute_path, temp_pptx_path,_limit_office_time=_limit_office_time)
     elif file_suffix == ".epub":
         text = epub2txt.process(file_absolute_path)
     elif file_suffix == ".mobi":
