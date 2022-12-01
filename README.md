@@ -66,9 +66,9 @@
 ## 文件下载
 
 * 0.0.7
-* [绿色版](https://gaoyongxian.lanzouy.com/iWCJj0hgaiqd)  
-* [安装包](https://gaoyongxian.lanzouy.com/i3gJg0hgaeud)
-* [32位绿色版](https://gaoyongxian.lanzouy.com/ih4oV0hgahab)  
+* [绿色版](https://gaoyongxian.lanzouy.com/iGv5Z0hgkjib)  
+* [安装包](https://gaoyongxian.lanzouy.com/iDvqw0hgk0sh)
+* [32位绿色版](https://gaoyongxian.lanzouy.com/iM5xs0hgl2pc)  
 
 * 百度网盘下载链接
 链接: https://pan.baidu.com/s/1iiFdEUzlq85tpfZgrMdv-Q?pwd=6t85 提取码: 6t85 复制这段内容后打开百度网盘手机App，操作更方便哦

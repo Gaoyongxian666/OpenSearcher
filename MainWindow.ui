@@ -1206,6 +1206,12 @@ QPushButton:hover {
           </item>
           <item>
            <widget class="QLabel" name="bottom_lable">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="font">
              <font>
               <family>微软雅黑</family>
@@ -1214,6 +1220,9 @@ QPushButton:hover {
             </property>
             <property name="text">
              <string>准备就绪！</string>
+            </property>
+            <property name="wordWrap">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
