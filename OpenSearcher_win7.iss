@@ -23,7 +23,7 @@ DefaultDirName={userdocs}/{#MyAppName}/{#MyAppVersion}
 DisableProgramGroupPage=yes
 ; Uncomment the following line to run in non administrative install mode (install for current user only.)
 ;PrivilegesRequired=lowest
-OutputDir=C:\Users\Gaoyongxian\Documents\GitHub\OpenSearcher\pack\dist
+OutputDir=C:\Users\Gaoyongxian\Documents\GitHub\OpenSearcher\pack
 OutputBaseFilename=OpenSearcher_{#MyAppVersion}
 SetupIconFile=C:\Users\Gaoyongxian\Documents\GitHub\OpenSearcher\icon\logo.ico
 Compression=lzma

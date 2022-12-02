@@ -1,4 +1,5 @@
 import datetime
+import locale
 import os
 import socket
 import sys
@@ -569,7 +570,7 @@ def main():
 
     Name = "OpenSearcher"
     Name_ = "Open Searcher"
-    Version = "0.0.7"
+    Version = "0.0.8"
     UpdateUrl = "https://aidcs-1256440297.cos.ap-beijing.myqcloud.com/OpenSearcher/update.txt"
 
     CurPath = os.path.dirname(os.path.abspath(sys.argv[0]))
@@ -655,4 +656,7 @@ def main():
 
 
 if __name__ == '__main__':
+    # windows7，python3使用time.strftime()函数报ValueError: embedded null byte
+    locale.setlocale(locale.LC_ALL, 'en')
+    locale.setlocale(locale.LC_CTYPE, 'chinese')
     main()

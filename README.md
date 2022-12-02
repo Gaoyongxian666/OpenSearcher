@@ -40,6 +40,8 @@
 
 
 ## 更新日志
+* 0.0.8
+  * 2022.12.02 感谢坛友 @doglove 提出的建议：修复Win7不能正常使用问题。(部分win7缺少dll、缺少补丁KB2533623）
 * 0.0.7
   * 2022.12.01 由于win32com在操作Office组件时可能会弹出不确定类型窗口阻塞，为此添加限制时间：在规定时间内用户没有响应Office提示窗口，将直接对当前文档报错并关闭Office，从而让程序能够继续往下处理。 
 * 0.0.6
@@ -65,10 +67,13 @@
 
 ## 文件下载
 
-* 0.0.7
-* [绿色版](https://gaoyongxian.lanzouy.com/iGv5Z0hgkjib)  
-* [安装包](https://gaoyongxian.lanzouy.com/iDvqw0hgk0sh)
-* [32位绿色版](https://gaoyongxian.lanzouy.com/iM5xs0hgl2pc)  
+* 0.0.8
+* [绿色版](https://gaoyongxian.lanzouy.com/iXmDA0hjlh6b)  
+* [安装包](https://gaoyongxian.lanzouy.com/iiKTT0hjlo6d)
+* [绿色版32位](https://gaoyongxian.lanzouy.com/ipTMp0hjlcuf)  
+* [Win7绿色版](https://gaoyongxian.lanzouy.com/ip8820hjlfxg)  
+* [Win7安装包](https://gaoyongxian.lanzouy.com/icJWt0hjlkyh)
+* [Win7绿色版32位](https://gaoyongxian.lanzouy.com/iVHsQ0hjlaqj)  
 
 * 百度网盘下载链接
 链接: https://pan.baidu.com/s/1iiFdEUzlq85tpfZgrMdv-Q?pwd=6t85 提取码: 6t85 复制这段内容后打开百度网盘手机App，操作更方便哦

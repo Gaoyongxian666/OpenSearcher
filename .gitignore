@@ -143,4 +143,6 @@ logs
 /*.ini
 venv32
 pack32
+packtest
+packwin7
 settings.ini
