@@ -1,4 +1,5 @@
 import os
+import traceback
 
 from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.QtCore import QAbstractTableModel, Qt, QModelIndex
@@ -15,12 +16,8 @@ class QFileTableView(QTableView):
         self.horizontalHeader().setStretchLastSection(True)
         self.verticalHeader().setVisible(False)  # 垂直表头缺省
         self.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.tableModel = FileModel(data=[], header=['文件名', '大小', '修改时间', '路径', '类型'])  # 设置model
+        self.tableModel = FileModel(data=[], header=['文件名', '大小', '路径', '类型'])  # 设置model
         self.setModel(self.tableModel)
-        self.setColumnWidth(0, 200)
-        self.setColumnWidth(1, 75)
-        self.setColumnWidth(2, 150)
-        self.setColumnWidth(3, 700)
         self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.TableViewContextMenu)
         self.doubleClicked.connect(self.onDoubleClickedTableViewOpenFile)
@@ -32,7 +29,10 @@ class QFileTableView(QTableView):
             return
         _index = self.tableModel.index(table_row, 3, QModelIndex())
         file_path = (str(_index.data()))
-        os.startfile(file_path)
+        try:
+            os.startfile(file_path)
+        except:
+            QMessageBox.information(self, '打开失败', traceback.format_exc(), QMessageBox.Ok)
 
     def TableViewContextMenu(self):
         if self.tableModel.rowCount() > 0:
@@ -60,10 +60,13 @@ class QFileTableView(QTableView):
         if table_row == -1:
             QMessageBox.information(self, '注意', '请先选中一项！', QMessageBox.Yes)
             return
-        _index = self.tableModel.index(table_row, 3, QModelIndex())
+        _index = self.tableModel.index(table_row, 2, QModelIndex())
         file_path = (str(_index.data()))
         dir_path = os.path.abspath(os.path.dirname(file_path))
-        os.startfile(dir_path)
+        try:
+            os.startfile(dir_path)
+        except:
+            QMessageBox.information(self, '打开失败', traceback.format_exc(), QMessageBox.Ok)
 
 
 class FileModel(QAbstractTableModel):

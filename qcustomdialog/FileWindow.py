@@ -1,4 +1,5 @@
 import os
+from PyQt5 import QtCore
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon
 from PyQt5.QtWidgets import QMainWindow, QMessageBox, QFileDialog, QAbstractItemView
 from qcustomdialog import file
@@ -8,9 +9,11 @@ from qutils.util import getparentlist, getsublist
 class FileWindow(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+
         self.child = file.Ui_MainWindow()
         self.child.setupUi(self)
-        self.setWindowTitle("常用目录")
+        self.setWindowTitle("目录管理")
 
         self.CurPath = parent.CurPath
         self.IconDir = parent.IconDir

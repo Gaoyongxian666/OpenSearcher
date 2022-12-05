@@ -1,0 +1,1 @@
+from .wps2txt import process

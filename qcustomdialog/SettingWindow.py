@@ -4,6 +4,7 @@ import sys
 import traceback
 import win32api
 import win32con
+from PyQt5 import QtCore
 from PyQt5.QtWidgets import QMainWindow
 from qcustomdialog import setting
 from qutils.util import is_user_admin, run_as_admin, create_right_menu, remove_right_menu, create_shortcut
@@ -14,6 +15,8 @@ logger = logging.getLogger(__name__)
 class SettingWindow(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+
         self.mysetting_dict = parent.mysetting_dict
         self.queue = parent.queue
         self.parent = parent
@@ -39,7 +42,6 @@ class SettingWindow(QMainWindow):
         self.child.checkBox_desktop.setChecked(self.mysetting_dict["_desktop"])
         self.child.checkBox_remind.setChecked(self.mysetting_dict["_remind"])
         self.child.checkBox_last_dir.setChecked(self.mysetting_dict["_last_dir_flag"])
-        self.child.checkBox_last_types.setChecked(self.mysetting_dict["_last_types_flag"])
         self.child.groupBox_auto_run.setChecked(self.mysetting_dict["_auto_run"])
         self.child.groupBox_right_menu.setChecked(self.mysetting_dict["_right_menu"])
 
@@ -50,7 +52,6 @@ class SettingWindow(QMainWindow):
         self.child.checkBox_show_all.stateChanged.connect(self.checkBox_show_all)
         self.child.checkBox_remind.stateChanged.connect(self.checkBox_remind)
         self.child.checkBox_last_dir.stateChanged.connect(self.checkBox_last_dir)
-        self.child.checkBox_last_types.stateChanged.connect(self.checkBox_last_types)
         self.child.checkBox_desktop.stateChanged.connect(self.checkBox_desktop)
         self.child.spinBox_limit_file_size.valueChanged.connect(self.spinBox_limit_file_size)
         self.child.spinBox_limit_office_time.valueChanged.connect(self.spinBox_limit_office_time)
@@ -139,8 +140,6 @@ class SettingWindow(QMainWindow):
     def checkBox_last_dir(self):
         self.mysetting_dict["_last_dir_flag"] = self.child.checkBox_last_dir.isChecked()
 
-    def checkBox_last_types(self):
-        self.mysetting_dict["_last_types_flag"] = self.child.checkBox_last_types.isChecked()
 
     def checkBox_desktop(self):
         if self.child.checkBox_desktop.isChecked():

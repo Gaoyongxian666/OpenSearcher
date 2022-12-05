@@ -1,4 +1,6 @@
 import os
+import traceback
+
 from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.QtGui import QStandardItemModel
 from PyQt5.QtWidgets import QListView, QAbstractItemView, QMessageBox
@@ -23,7 +25,10 @@ class QFileListView(QListView):
             return
         _item = self.listModel.item(table_row, 0)
         file_path = _item.text().split("-> (")[1][:-1]
-        os.startfile(file_path)
+        try:
+            os.startfile(file_path)
+        except:
+            QMessageBox.information(self, '打开失败', traceback.format_exc(), QMessageBox.Ok)
 
     def ListViewContextMenu(self):
         if self.listModel.rowCount() > 0:
@@ -54,4 +59,7 @@ class QFileListView(QListView):
         _item = self.listModel.item(table_row, 0)
         file_path = _item.text().split("-> (")[1][:-1]
         dir_path = os.path.abspath(os.path.dirname(file_path))
-        os.startfile(dir_path)
+        try:
+            os.startfile(dir_path)
+        except:
+            QMessageBox.information(self, '打开失败', traceback.format_exc(), QMessageBox.Ok)

@@ -3,7 +3,7 @@
 
 #define MyAppName "OpenSearcher"
 #define MyDesktopAppName "Open Searcher"
-#define MyAppVersion "0.0.8"
+#define MyAppVersion "0.0.9"
 #define MyAppPublisher "Gaoyongxian"
 #define MyAppURL "https://github.com/Gaoyongxian666/OpenSearcher"
 #define MyAppExeName "OpenSearcher.exe"

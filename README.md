@@ -9,8 +9,10 @@
 * ```pptx``` Via [python-pptx](https://github.com/scanny/python-pptx)  
 * ```mobi``` Via [mobi](https://github.com/iscc/mobi)  
 * ```epub``` Via [ebooklib](https://github.com/aerkalov/ebooklib)  
-* ```pdf``` Via [pdfminer.six](https://github.com/pdfminer/pdfminer.six)  
-* ```doc、xls、ppt``` Via [pywin32](https://github.com/mhammond/pywin32)  
+* ```pdf``` Via [pdfminer.six](https://github.com/pdfminer/pdfminer.six)
+* ```wps、et``` Via [pywin32](https://github.com/mhammond/pywin32)  By ```WPS Office```
+* ```doc、xls、ppt``` Via [pywin32](https://github.com/mhammond/pywin32)  By ```WPS Office``` or ```Microsoft Office```   
+* ```Image Meta Data（EXIF, IPTC, XMP）``` Via [pyexiv2](https://github.com/LeoHsiao1/pyexiv2) only ```64-bit Machine```
 
 
 ## 使用提示
@@ -19,6 +21,7 @@
 3. 在```第一次搜索```某个文件目录时，搜索速度很慢，但是下次```搜索相同目录```将会很快。(原因就是第一次搜索的时候还没有建立索引缓存)  
 4. 实际上```索引缓存```就是以```文件的MD5值```命名的```Text```文本文件，存放目录就在安装目录下的```.temp```文件夹下.（这意味这如果更新软件，你可以直接将```.temp```文件复制到新安装路径下，而不用耗费时间```重新索引```。）
 5. 在```搜索进行```中，必须退出正在打开的```word、excel、ppt```文档，退出```Microsoft Office```或```WPS Office```程序，因为本程序强行关闭Office可能会影响你的文档。（原因是当```doc```、```xls```、```ppt```在经过```antiword```、```xlrd```处理失败后，将选择通过系统中的```Office组件```进行再处理）
+6. 搜索```图像元数据```， ```pyexiv2```不支持32位，请务必```缩小```搜索范围，最好选择具体的文件夹，因为```Windows```系统中图片太多，全盘搜索非常浪费时间。
 
 ## 关于速度
 &nbsp;&nbsp;搜索时间大部分都是消耗在第一次处理文件，也就是建立索引缓存那个过程。所以有时你在第一次搜索某个目录的时候感觉不是很快，但是如果你第二次搜索相同的目录将会很快。
@@ -35,11 +38,12 @@
 
 ## 开发环境
 
-```pip install -r requirements.txt```
-
+* ```pip install -r requirements.txt```
 
 
 ## 更新日志
+* 0.0.9
+  * 2022.12.05 添加读取图像元数据（EXIF, IPTC, XMP），添加更多文本格式，解决内存泄露导致的内存堆积，优化频繁启动Office的错误逻辑，提升速度等。  
 * 0.0.8
   * 2022.12.02 感谢坛友 @doglove 提出的建议：修复Win7不能正常使用问题。(部分win7缺少dll、缺少补丁KB2533623）
 * 0.0.7
@@ -67,13 +71,13 @@
 
 ## 文件下载
 
-* 0.0.8
-* [绿色版](https://gaoyongxian.lanzouy.com/iXmDA0hjlh6b)  
-* [安装包](https://gaoyongxian.lanzouy.com/iiKTT0hjlo6d)
-* [绿色版32位](https://gaoyongxian.lanzouy.com/ipTMp0hjlcuf)  
-* [Win7绿色版](https://gaoyongxian.lanzouy.com/ip8820hjlfxg)  
-* [Win7安装包](https://gaoyongxian.lanzouy.com/icJWt0hjlkyh)
-* [Win7绿色版32位](https://gaoyongxian.lanzouy.com/iVHsQ0hjlaqj)  
+* 0.0.9
+* [绿色版](https://gaoyongxian.lanzouy.com/in4vW0hx94ji)  
+* [安装包](https://gaoyongxian.lanzouy.com/ikVD40hx97kh)
+* [绿色版32位](https://gaoyongxian.lanzouy.com/ijz1W0hx905a)  
+* [Win7绿色版](https://gaoyongxian.lanzouy.com/iMS0N0hx92fc)  
+* [Win7安装包](https://gaoyongxian.lanzouy.com/iiSnM0hx96sj)
+* [Win7绿色版32位](https://gaoyongxian.lanzouy.com/ixSm10hx8yle)  
 
 * 百度网盘下载链接
 链接: https://pan.baidu.com/s/1iiFdEUzlq85tpfZgrMdv-Q?pwd=6t85 提取码: 6t85 复制这段内容后打开百度网盘手机App，操作更方便哦

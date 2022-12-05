@@ -1,32 +1,31 @@
+import ctypes
+import hashlib
 import logging
-import time
 import os
 import sys
 import traceback
 import warnings
 import winreg
-import ctypes
-import chardet
-import docx2txt
-import win32api
-import win32con
-import win32gui
-import win32process
-import winshell
-from PyQt5.QtWidgets import qApp
-
-from qutils import doc2txt, xls2txt, xlsx2txt, pptx2txt, ppt2txt, epub2txt, mobi2txt
-import pdfminer.high_level
-from PyQt5.QtCore import QProcess
-from PyQt5.QtGui import QIcon
-import win32clipboard
 from ctypes import *
+
+import chardet
+import pdfminer.high_level
+import win32api
+import win32clipboard
+import win32con
+import winshell
+from PyQt5.QtCore import QProcess
+from PyQt5.QtWidgets import qApp
 from win32comext.shell.shell import ShellExecuteEx
+
+from qutils import doc2txt, xls2txt, xlsx2txt, pptx2txt, ppt2txt, epub2txt, mobi2txt, image2txt, docx2txt_, wps2txt, \
+    et2txt
 
 logger = logging.getLogger(__name__)
 
 
 def contains_same_path(path, pathlist):
+    """是否存在相同路径"""
     for p in pathlist:
         if os.path.samefile(path, p):
             logger.info("找到相同路径：" + p)
@@ -35,32 +34,37 @@ def contains_same_path(path, pathlist):
 
 
 def getparentlist(path, pathlist):
-    """返回pathlist所有父路径"""
+    """返回pathlist中path的所有父路径"""
     parentlist = []
     for path_ in pathlist:
         if os.path.realpath(path).startswith(os.path.realpath(path_) + os.sep):
             parentlist.append(path_)
-    logger.info("寻找父路径："+path+"存在父路径"+str(parentlist))
+    logger.info("寻找父路径：" + path + "存在父路径" + str(parentlist))
     return parentlist
 
 
 def getsublist(path, pathlist):
-    """返回pathlist所有子路径"""
+    """返回pathlist中path的所有子路径"""
     sublist = []
     for path_ in pathlist:
         if os.path.realpath(path_).startswith(os.path.realpath(path) + os.sep):
             sublist.append(path_)
-    logger.info("寻找子路径："+path+"存在子路径"+str(sublist))
+    logger.info("寻找子路径：" + path + "存在子路径" + str(sublist))
     return sublist
 
 
-def file_name_list(dir_path: str, types: list, exclude=None, icon_dir: str = "icon", size_limit=100) -> list:
+def file_name_list(dir_path: str, types: list,IconDict, exclude=None, size_limit=100,
+                   search_running=None) -> list:
     """返回指定类型的文件列表"""
+    if search_running is None:
+        search_running = [True]
     if exclude is None:
         exclude = []
     L = []
     if len(getparentlist(dir_path, exclude)) == 0 and not contains_same_path(dir_path, exclude):
         for root, dirs, files in os.walk(dir_path, topdown=True):
+            if not search_running[0]:
+                break
             dirs[:] = [d for d in dirs if not contains_same_path(os.path.abspath(os.path.join(root, d)), exclude)]
             for file in files:
                 if "~$" not in file:
@@ -69,15 +73,15 @@ def file_name_list(dir_path: str, types: list, exclude=None, icon_dir: str = "ic
                     suffix = filename[1]
                     if suffix in types and filename_[0] != "$":
                         absolute_path = os.path.abspath(os.path.join(root, file))
-                        modifytime = time.strftime("%Y年%m月%d日 %H:%M:%S",
-                                                   time.localtime(os.path.getmtime(absolute_path)))
-                        icon_ = QIcon(os.path.abspath(os.path.join(icon_dir, "%s.png" % suffix[1:])))
+
+                        icon_ = IconDict["icon_%s" % suffix[1:]]
                         if os.path.getsize(absolute_path) < size_limit * 1024 * 1024:
-                            L.append([(icon_, file), (None, getDocSize(absolute_path)),
-                                      (None, modifytime), (None, absolute_path), (None, suffix)])
+                            L.append([(icon_, file),
+                                      (None, getDocSize(absolute_path)),
+                                      (None, absolute_path),
+                                      (None, suffix)])
                         else:
-                            logger.info("文件太大：" + absolute_path)
-                            logger.info(getDocSize(absolute_path))
+                            logger.info("文件太大：" + str(getDocSize(absolute_path)) + "。文件路径：" + absolute_path)
     return L
 
 
@@ -110,6 +114,7 @@ def getDocSize(path):
 
 
 def warning_on_one_line(message, category, filename, lineno, file=None, line=None):
+    """将警告信息放在一行"""
     return '%s: %s\n' % (category.__name__, message)
 
 
@@ -239,8 +244,8 @@ def run_as_admin(args):
 
 
 def set_auto(name, exe_path):
+    """设置开机自启"""
     try:
-        # path = os.path.abspath(os.path.join(self.CurPath, "OpenSearcher.exe"))
         KeyName = r"SOFTWARE\Microsoft\Windows\CurrentVersion\Run"
         key = win32api.RegOpenKey(win32con.HKEY_CURRENT_USER, KeyName, 0, win32con.KEY_ALL_ACCESS)
         win32api.RegSetValueEx(key, name, 0, win32con.REG_SZ, exe_path)
@@ -253,6 +258,7 @@ def set_auto(name, exe_path):
 
 
 def set_right_menu(name, content, icon, exe_path):
+    """设置空白处、文件夹右键菜单"""
     if not is_user_admin():
         return run_as_admin("set_menu")
     else:
@@ -269,40 +275,61 @@ def set_right_menu(name, content, icon, exe_path):
             logger.info(traceback.format_exc())
             return False
 
-
-
-def get_text(file_suffix, file_absolute_path, file_md5, temp_path, antiword_path,_limit_office_time) -> str:
+def get_text(file_suffix, file_absolute_path, file_md5, temp_path, antiword_path, _limit_office_time) -> str:
     """转字符串返回处理结果"""
+    image_types_list = [".psd", ".png", ".jpg", ".jpeg", ".raw", ".tiff", ".bmp"]
+    txt_types_list = [".txt", ".srt", ".json", ".yaml", ".config", ".md", ".markdown"]
     if file_suffix == ".docx":
-        text = docx2txt.process(file_absolute_path)
+        temp_docx_path = os.path.abspath(os.path.join(temp_path, file_md5 + ".docx"))
+        text = docx2txt_.process(docx_path=file_absolute_path,
+                                 temp_docx_path=temp_docx_path,
+                                 _limit_office_time=_limit_office_time)
     elif file_suffix == ".doc":
         temp_docx_path = os.path.abspath(os.path.join(temp_path, file_md5 + ".docx"))
-        text = doc2txt.process(doc_path=file_absolute_path, temp_docx_path=temp_docx_path, antiword_path=antiword_path,
-                               antiword_try_wrap=True,_limit_office_time=_limit_office_time)
+        text = doc2txt.process(doc_path=file_absolute_path,
+                               temp_docx_path=temp_docx_path,
+                               antiword_path=antiword_path,
+                               _limit_office_time=_limit_office_time)
     elif file_suffix == ".xls":
         temp_xlsx_path = os.path.abspath(os.path.join(temp_path, file_md5 + ".xlsx"))
-        text = xls2txt.process(file_absolute_path, temp_xlsx_path,_limit_office_time=_limit_office_time)
+        text = xls2txt.process(xls_path=file_absolute_path,
+                               temp_xlsx_path=temp_xlsx_path,
+                               _limit_office_time=_limit_office_time)
     elif file_suffix == ".xlsx":
-        text = xlsx2txt.process(file_absolute_path)
-    elif file_suffix == ".pdf":
-        text = pdfminer.high_level.extract_text(file_absolute_path)
-    elif file_suffix == ".txt":
-        with open(file_absolute_path, "r", encoding=detect_encoding(file_absolute_path), errors='ignore') as f:
-            text = f.read()
+        temp_xlsx_path = os.path.abspath(os.path.join(temp_path, file_md5 + ".xlsx"))
+        text = xlsx2txt.process(xlsx_path=file_absolute_path,
+                                temp_xlsx_path=temp_xlsx_path,
+                                _limit_office_time=_limit_office_time)
     elif file_suffix == ".pptx":
-        text = pptx2txt.process(file_absolute_path)
+        temp_pptx_path = os.path.abspath(os.path.join(temp_path, file_md5 + ".pptx"))
+        text = pptx2txt.process(pptx_path=file_absolute_path,
+                                temp_pptx_path=temp_pptx_path,
+                                _limit_office_time=_limit_office_time)
     elif file_suffix == ".ppt":
         temp_pptx_path = os.path.abspath(os.path.join(temp_path, file_md5 + ".pptx"))
-        text = ppt2txt.process(file_absolute_path, temp_pptx_path,_limit_office_time=_limit_office_time)
+        text = ppt2txt.process(ppt_path=file_absolute_path,
+                               temp_pptx_path=temp_pptx_path,
+                               _limit_office_time=_limit_office_time)
+    elif file_suffix == ".wps":
+        temp_docx_path = os.path.abspath(os.path.join(temp_path, file_md5 + ".docx"))
+        text = wps2txt.process(wps_path=file_absolute_path,
+                               temp_docx_path=temp_docx_path,
+                               _limit_office_time=_limit_office_time)
+    elif file_suffix == ".et":
+        temp_xlsx_path = os.path.abspath(os.path.join(temp_path, file_md5 + ".xlsx"))
+        text = et2txt.process(et_path=file_absolute_path,
+                              temp_xlsx_path=temp_xlsx_path,
+                              _limit_office_time=_limit_office_time)
+    elif file_suffix == ".pdf":
+        text = pdfminer.high_level.extract_text(file_absolute_path)
     elif file_suffix == ".epub":
         text = epub2txt.process(file_absolute_path)
     elif file_suffix == ".mobi":
         text = mobi2txt.process(file_absolute_path)
+    elif file_suffix in image_types_list:
+        text = image2txt.process(file_absolute_path)
+    elif file_suffix in txt_types_list:
+        with open(file_absolute_path, "r", encoding=detect_encoding(file_absolute_path), errors='ignore') as f:
+            text = f.read()
+
     return text
-
-
-if __name__ == "__main__":
-    # print(file_name_list(r"C:\Users\Gaoyongxian\Documents\GitHub\OpenSearcher", types=[".txt"]))
-    # print(contains_same_path(r'C:/Users/Gaoyongxian/Downloads',
-    #                          ['C:\\Users\\Gaoyongxian\\Downloads', 'C:\\Users\\Gaoyongxian\\Documents\\AnLink']))
-    print(contains_same_path(r"C:/Users/Gaoyongxian/Documents", [r"C:\Users\Gaoyongxian\Documents",r"C:\Users\Gaoyongxian"]))

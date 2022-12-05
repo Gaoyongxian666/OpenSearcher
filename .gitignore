@@ -135,14 +135,18 @@ logs
 .errortemp
 .temp
 .idea
-!requirements.txt
-!antiword/
+
 
 # 只忽略当前文件下的txt文件
 /*.txt
 /*.ini
+/*.iss
 venv32
 pack32
 packtest
 packwin7
 settings.ini
+!update.txt
+!requirements.txt
+!antiword/
+pyexiv2

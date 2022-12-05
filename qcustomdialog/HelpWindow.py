@@ -1,6 +1,7 @@
 import os.path
 import sys
 
+from PyQt5 import QtCore
 from PyQt5.QtCore import QThread, pyqtSignal
 from PyQt5.QtWidgets import QMainWindow, QFileDialog
 from qcustomdialog import help
@@ -9,11 +10,13 @@ from qcustomdialog import help
 class HelpWindow(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+
         self.child = help.Ui_MainWindow()
         self.child.setupUi(self)
+        self.setWindowTitle("使用说明")
 
         self.file = parent.HelpPath
-        self.setWindowTitle("使用说明")
         self.child.pushButton.clicked.connect(self.openfile)
         self.child.lineEdit.setText(self.file)
 

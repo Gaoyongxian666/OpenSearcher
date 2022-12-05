@@ -1,1 +1,1 @@
-from .QComboCheckBox import *
+from .QComboCheckBox import QComboCheckBox

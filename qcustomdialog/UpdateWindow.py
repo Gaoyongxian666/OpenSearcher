@@ -3,6 +3,7 @@ import os.path
 import traceback
 import webbrowser
 import requests
+from PyQt5 import QtCore
 from PyQt5.QtCore import QThread, pyqtSignal
 from PyQt5.QtWidgets import QMainWindow
 from qcustomdialog import update
@@ -11,8 +12,11 @@ from qcustomdialog import update
 class UpdateWindow(QMainWindow):
     def __init__(self, parent=None, *args, **kwargs):
         super().__init__(parent)
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+
         self.child = update.Ui_MainWindow()
         self.child.setupUi(self)
+        self.setWindowTitle("检查更新")
 
         self.version = parent.Version
         self.logger = parent.logger
@@ -20,7 +24,6 @@ class UpdateWindow(QMainWindow):
         self.update_url = parent.UpdateUrl
         self.software_url = ""
 
-        self.setWindowTitle("检查更新")
         self.child.cancel.clicked.connect(self.cancel_)
         self.child.ok.clicked.connect(self.ok_)
         self.child.ok.hide()

@@ -98,7 +98,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_3.setSpacing(6)
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
         self.comboBox_dir = QComboDirBox(self.frame_center_left)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.comboBox_dir.sizePolicy().hasHeightForWidth())
@@ -107,7 +107,7 @@ class Ui_MainWindow(object):
         self.comboBox_dir.setMaximumSize(QtCore.QSize(16777215, 30))
         self.comboBox_dir.setObjectName("comboBox_dir")
         self.horizontalLayout_3.addWidget(self.comboBox_dir, 0, QtCore.Qt.AlignVCenter)
-        self.comboBox_type = QComboCheckBox(self.frame_center_left)
+        self.comboBox_type = QComboCustomBox(self.frame_center_left)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -118,7 +118,7 @@ class Ui_MainWindow(object):
         self.comboBox_type.setObjectName("comboBox_type")
         self.horizontalLayout_3.addWidget(self.comboBox_type, 0, QtCore.Qt.AlignVCenter)
         self.pushButton = QtWidgets.QPushButton(self.frame_center_left)
-        self.pushButton.setMinimumSize(QtCore.QSize(0, 30))
+        self.pushButton.setMinimumSize(QtCore.QSize(100, 30))
         self.pushButton.setMaximumSize(QtCore.QSize(70, 30))
         self.pushButton.setObjectName("pushButton")
         self.horizontalLayout_3.addWidget(self.pushButton, 0, QtCore.Qt.AlignVCenter)
@@ -149,6 +149,6 @@ class Ui_MainWindow(object):
         self.top_lable.setText(_translate("MainWindow", "准备就绪"))
         self.pushButton.setText(_translate("MainWindow", "开始"))
 from qclickablelabel import QClickableLabel
-from qcombocheckbox import QComboCheckBox
+from qcombocustombox import QComboCustomBox
 from qcombodirbox import QComboDirBox
 from qloadingprogressbar import QLoadingProgressBar

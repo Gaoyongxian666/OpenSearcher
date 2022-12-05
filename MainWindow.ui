@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1278</width>
-    <height>574</height>
+    <width>1277</width>
+    <height>571</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -224,7 +224,7 @@ QPushButton:hover {
                 </font>
                </property>
                <property name="text">
-                <string>常用目录</string>
+                <string>目录管理</string>
                </property>
                <property name="icon">
                 <iconset resource="icon.qrc">
@@ -234,6 +234,32 @@ QPushButton:hover {
                 <size>
                  <width>33</width>
                  <height>33</height>
+                </size>
+               </property>
+               <property name="toolButtonStyle">
+                <enum>Qt::ToolButtonTextUnderIcon</enum>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QToolButton" name="types_button">
+               <property name="minimumSize">
+                <size>
+                 <width>60</width>
+                 <height>60</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>文件类型</string>
+               </property>
+               <property name="icon">
+                <iconset resource="icon.qrc">
+                 <normaloff>:/icon/icon/types.png</normaloff>:/icon/icon/types.png</iconset>
+               </property>
+               <property name="iconSize">
+                <size>
+                 <width>35</width>
+                 <height>35</height>
                 </size>
                </property>
                <property name="toolButtonStyle">
@@ -314,7 +340,7 @@ QPushButton:hover {
                </property>
                <property name="icon">
                 <iconset resource="icon.qrc">
-                 <normaloff>:/icon/icon/settings (1).png</normaloff>:/icon/icon/settings (1).png</iconset>
+                 <normaloff>:/icon/icon/settings.png</normaloff>:/icon/icon/settings.png</iconset>
                </property>
                <property name="iconSize">
                 <size>
@@ -462,7 +488,7 @@ QPushButton:hover {
                </property>
                <property name="icon">
                 <iconset resource="icon.qrc">
-                 <normaloff>:/icon/icon/zoom-in (1).png</normaloff>:/icon/icon/zoom-in (1).png</iconset>
+                 <normaloff>:/icon/icon/zoom-in.png</normaloff>:/icon/icon/zoom-in.png</iconset>
                </property>
                <property name="iconSize">
                 <size>
@@ -1194,7 +1220,7 @@ QPushButton:hover {
             </property>
             <property name="icon">
              <iconset resource="icon.qrc">
-              <normaloff>:/icon/icon/提醒.png</normaloff>:/icon/icon/提醒.png</iconset>
+              <normaloff>:/icon/icon/remind.png</normaloff>:/icon/icon/remind.png</iconset>
             </property>
             <property name="iconSize">
              <size>

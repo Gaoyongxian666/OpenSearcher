@@ -1,5 +1,5 @@
 import os
-import win32con, time
+import win32con
 from uuid import uuid1
 from win32clipboard import GetClipboardData, OpenClipboard, CloseClipboard, EmptyClipboard, SetClipboardData, \
     EnumClipboardFormats

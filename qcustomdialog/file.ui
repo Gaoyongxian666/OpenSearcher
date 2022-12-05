@@ -182,7 +182,7 @@
               </sizepolicy>
              </property>
              <property name="title">
-              <string>忽略目录</string>
+              <string>禁止目录</string>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_5">
               <property name="spacing">
@@ -217,7 +217,7 @@
                     </font>
                    </property>
                    <property name="text">
-                    <string>设置禁止搜索的目录，软件搜索时将跳过这些目录。</string>
+                    <string>设置禁止搜索的目录，搜索时将跳过这些目录。</string>
                    </property>
                   </widget>
                  </item>

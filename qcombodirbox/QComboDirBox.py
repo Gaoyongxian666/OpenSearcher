@@ -30,11 +30,10 @@ class QComboDirBox(QComboBox):
 
         self.qLineEdit = ClickableLineEdit()
         self.qLineEdit.setReadOnly(True)
-
-
         self.setLineEdit(self.qLineEdit)
         self.qListView = QListView()
         self.setView(self.qListView)
+        self.textActivated.connect(self.change)
 
         # self.setStyleSheet('''
         # QAbstractItemView::item {height: 50px;}''')
@@ -42,13 +41,11 @@ class QComboDirBox(QComboBox):
         # self.qLineEdit.ma(30,0,0,0)
         # self.qListView.setStyleSheet("margin-left: 5px;")
 
-        self.textActivated.connect(self.change)
-
         self.Init()
         self.setStyleSheet('''
-                QComboDirBox { padding-left: 8px; }
-                QListView {margin-left: 5px;}
-                QListView::item {height:27px;}''')
+            QComboDirBox { padding-left: 8px; }
+            QListView {margin-left: 5px;}
+            QListView::item {height:27px;}''')
 
     def Init(self):
         try:
@@ -67,13 +64,12 @@ class QComboDirBox(QComboBox):
 
     def onClickedOpenFileDialog(self):
         self.DirPath = QFileDialog.getExistingDirectory(self, '选择文件夹', os.path.dirname(self.IconDir))
-        print(self.DirPath)
         if self.DirPath != "":
             self.qLineEdit.setText(os.path.abspath(self.DirPath))
 
     def change(self):
         if self.currentText() == "自定义目录":
-            self.qLineEdit.setText("")
+            self.qLineEdit.clear()
             self.onClickedOpenFileDialog()
 
     def text(self):

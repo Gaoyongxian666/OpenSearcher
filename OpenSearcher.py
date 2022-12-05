@@ -13,6 +13,8 @@ from PyQt5.QtCore import QModelIndex, QThread, pyqtSignal, QTimer, QProcess, QSe
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QMainWindow, QDesktopWidget, QMessageBox, qApp
 from sqlitedict import SqliteDict
+
+from qcustomdialog.CustomTypeWindow import CustomTypeWindow
 from qcustomdialog.FileWindow import FileWindow
 from qcustomdialog.HelpWindow import HelpWindow
 from qcustomdialog.IndexWindow import IndexWindow
@@ -22,6 +24,8 @@ from MainWindow import Ui_MainWindow
 from qutils.searchthread import SearchThread
 from qutils.traythread import TrayThread
 import logging
+
+from qutils.types import GetTextTypesDict, GetTypesDict, GetImageTypesDict
 from qutils.util import create_right_menu, remove_right_menu, create_shortcut, set_auto, set_right_menu
 
 logger = logging.getLogger(__name__)
@@ -53,25 +57,30 @@ class MainWindow(QMainWindow):
         self.LnkPath2 = os.path.abspath(os.path.join(winshell.common_desktop(), self.Name_ + ".lnk"))
 
         self.isMax = False
-        self.search_running = False
         self.queue = Queue()
-        self.settings = QSettings(os.path.abspath(os.path.join(self.CurPath, 'settings.ini')), QSettings.IniFormat)
-        self.search_info = "\n".join(("搜索类型：XXXX", "搜索目录：XXXX", "文件限制：XXXX", "忽略目录：XXXX"))
+        self.SettingsIni = QSettings(os.path.abspath(os.path.join(self.CurPath, 'settings.ini')), QSettings.IniFormat)
+        self.SearchInfo = "\n".join(("搜索类型：None\t\t\t",
+                                     "搜索目录：None\t\t\t",
+                                     "文件限制：None\t\t\t",
+                                     "忽略目录：None\t\t\t"))
+        self.IconDict = {}
         self.Tips = '''使用提示：
 
-1. 利用空闲时间，提前建立索引缓存很重要，将大大加快之后的搜索。
+1. 尽量不要选择全盘搜索，而是选择某个文件夹进行搜索，因为Python读取目录太慢了。
 
-2. 在第一次搜索某个文件目录时，搜索速度或许很慢，但是下次搜索相同目录将会很快。
+2. 利用空闲时间，提前建立索引缓存，第一次搜索目录速度很慢，但是下次搜索将会很快。
 
-3. 在搜索进行中，必须退出正在打开的word、excel、ppt文档，因为本程序强行关闭Office可能会影响你的文档。'''
+3. 在搜索进行中，必须退出word、excel等文档，因为搜索中强行关闭Office会影响你的文档。
+
+4. 更新版本时，不用重新建立索引，直接将上一版本安装目录下.temp文件夹复制到本版本的安装目录下。'''
 
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.ui.frame.setEnabled(False)
         self.Init()
+        self.InitIcon()
         self.InitTrayIcon()
         self.InitLogger()
-        self.InitComboBox()
         self.InitGeometry()
         self.InitRelayUpdate()
 
@@ -94,10 +103,10 @@ class MainWindow(QMainWindow):
         self.ui.progressBar.stop()
         self.ui.progressBar.hide()
 
-        self.ui.tableView.setColumnWidth(0, 200)
+        self.ui.tableView.setColumnWidth(0, 300)
         self.ui.tableView.setColumnWidth(1, 75)
-        self.ui.tableView.setColumnWidth(2, 150)
-        self.ui.tableView.setColumnWidth(3, 700)
+        self.ui.tableView.setColumnWidth(2, 700)
+        self.ui.tableView.setColumnWidth(3, 150)
 
         self.ui.search_button.clicked.connect(self.onClickedSearch)
         self.ui.textEdit_keywords.returnPressed.connect(self.onClickedSearch)
@@ -114,6 +123,7 @@ class MainWindow(QMainWindow):
         self.ui.listView_error.clicked.connect(self.onClickedListView)
         self.ui.listView_all.clicked.connect(self.onClickedListView_)
         self.ui.top_lable.clicked.connect(self.onClickedShowSearchInfo)
+        self.ui.types_button.clicked.connect(self.onClickedCustomTypeWindow)
 
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.UpdateUi)
@@ -122,6 +132,7 @@ class MainWindow(QMainWindow):
     def UpdateUi(self):
         if not self.queue.empty():
             for i in range(self.queue.qsize()):
+                pass
                 content = self.queue.get()
                 if content[0] == "error":
                     self.ui.listView_error.listModel.appendRow(content[1])
@@ -146,12 +157,18 @@ class MainWindow(QMainWindow):
                 elif content[0] == "_common_dir":
                     self.ui.comboBox_dir.setCurrentText(content[1])
 
+    def onClickedCustomTypeWindow(self):
+        self.onClickedShow()
+        self.ui.comboBox_type.saveState()
+        self.ui.comboBox_type.Clear()
+        customtypewindow = CustomTypeWindow(self)
+        customtypewindow.show()
+
     def onClickedShowSearchInfo(self):
-        QMessageBox.information(self, '搜索信息', self.search_info, QMessageBox.Ok)
+        QMessageBox.information(self, '搜索信息', self.SearchInfo, QMessageBox.Ok)
 
     def onClickedZoomIn(self):
-        # 放大
-        self.ui.textframe.zoomIn(1)
+        self.ui.textframe.zoomIn(1)  # 放大
 
     def onClickedZoomOut(self):
         self.ui.textframe.zoomIn(-1)
@@ -173,7 +190,7 @@ class MainWindow(QMainWindow):
 
     def onClickedTableView(self, index):
         table_row = index.row()
-        _index = self.ui.tableView.tableModel.index(table_row, 3, QModelIndex())
+        _index = self.ui.tableView.tableModel.index(table_row, 2, QModelIndex())
         file_path = os.path.abspath(str(_index.data()))
         self.queue.put(("loading", file_path, False))
 
@@ -203,6 +220,39 @@ class MainWindow(QMainWindow):
 
     '''-----------------------------------初始化设置 and 耗时操作线程（以及监听端口）-----------------------------------------------'''
 
+    def InitIcon(self):
+        self.IconDict["icon_doc"] = QIcon(os.path.abspath(os.path.join(self.IconDir, "doc.png")))
+        self.IconDict["icon_docx"] = QIcon(os.path.abspath(os.path.join(self.IconDir, "docx.png")))
+        self.IconDict["icon_xls"] = QIcon(os.path.abspath(os.path.join(self.IconDir, "xls.png")))
+        self.IconDict["icon_xlsx"] = QIcon(os.path.abspath(os.path.join(self.IconDir, "xlsx.png")))
+        self.IconDict["icon_ppt"] = QIcon(os.path.abspath(os.path.join(self.IconDir, "ppt.png")))
+        self.IconDict["icon_pptx"] = QIcon(os.path.abspath(os.path.join(self.IconDir, "pptx.png")))
+        self.IconDict["icon_pdf"] = QIcon(os.path.abspath(os.path.join(self.IconDir, "pdf.png")))
+        self.IconDict["icon_txt"] = QIcon(os.path.abspath(os.path.join(self.IconDir, "txt.png")))
+        self.IconDict["icon_epub"] = QIcon(os.path.abspath(os.path.join(self.IconDir, "epub.png")))
+        self.IconDict["icon_mobi"] = QIcon(os.path.abspath(os.path.join(self.IconDir, "mobi.png")))
+        self.IconDict["icon_et"] = QIcon(os.path.abspath(os.path.join(self.IconDir, "et.png")))
+        self.IconDict["icon_wps"] = QIcon(os.path.abspath(os.path.join(self.IconDir, "wps.png")))
+
+        self.IconDict["icon_psd"] = QIcon(os.path.abspath(os.path.join(self.IconDir, "psd.png")))
+        self.IconDict["icon_png"] = QIcon(os.path.abspath(os.path.join(self.IconDir, "png.png")))
+        self.IconDict["icon_jpg"] = QIcon(os.path.abspath(os.path.join(self.IconDir, "jpg.png")))
+        self.IconDict["icon_jpeg"] = QIcon(os.path.abspath(os.path.join(self.IconDir, "jpg.png")))
+        self.IconDict["icon_tiff"] = QIcon(os.path.abspath(os.path.join(self.IconDir, "tiff.png")))
+        self.IconDict["icon_raw"] = QIcon(os.path.abspath(os.path.join(self.IconDir, "raw.png")))
+        self.IconDict["icon_bmp"] = QIcon(os.path.abspath(os.path.join(self.IconDir, "bmp.png")))
+        self.IconDict["icon_image"] = QIcon(os.path.abspath(os.path.join(self.IconDir, "image.png")))
+
+        self.IconDict["icon_md"] = QIcon(os.path.abspath(os.path.join(self.IconDir, "md.png")))
+        self.IconDict["icon_markdown"] = QIcon(os.path.abspath(os.path.join(self.IconDir, "md.png")))
+        self.IconDict["icon_conf"] = QIcon(os.path.abspath(os.path.join(self.IconDir, "conf.png")))
+        self.IconDict["icon_yaml"] = QIcon(os.path.abspath(os.path.join(self.IconDir, "yaml.png")))
+        self.IconDict["icon_json"] = QIcon(os.path.abspath(os.path.join(self.IconDir, "json.png")))
+        self.IconDict["icon_srt"] = QIcon(os.path.abspath(os.path.join(self.IconDir, "srt.png")))
+
+    def InitComboBox(self, mysetting_dict):
+        self.ui.comboBox_type.InitComboBox(mysetting_dict)
+
     def InitLogger(self):
         if not os.path.isdir(self.LogDir):
             os.makedirs(self.LogDir)
@@ -218,13 +268,14 @@ class MainWindow(QMainWindow):
 
     def InitGeometry(self):
         if os.path.exists(os.path.join(self.CurPath, "settings.ini")):
-            self.restoreGeometry(self.settings.value("geometry", self.saveGeometry()))
-            self.restoreState(self.settings.value("state", self.saveState()))
-            self.ui.splitter.restoreGeometry(self.settings.value("splitter_geometry", self.ui.splitter.saveGeometry()))
-            self.ui.splitter.restoreState(self.settings.value("splitter_state", self.ui.splitter.saveState()))
+            self.restoreGeometry(self.SettingsIni.value("geometry", self.saveGeometry()))
+            self.restoreState(self.SettingsIni.value("state", self.saveState()))
+            self.ui.splitter.restoreGeometry(
+                self.SettingsIni.value("splitter_geometry", self.ui.splitter.saveGeometry()))
+            self.ui.splitter.restoreState(self.SettingsIni.value("splitter_state", self.ui.splitter.saveState()))
             self.ui.splitter_2.restoreGeometry(
-                self.settings.value("splitter_2_geometry", self.ui.splitter_2.saveGeometry()))
-            self.ui.splitter_2.restoreState(self.settings.value("splitter_2_state", self.ui.splitter_2.saveState()))
+                self.SettingsIni.value("splitter_2_geometry", self.ui.splitter_2.saveGeometry()))
+            self.ui.splitter_2.restoreState(self.SettingsIni.value("splitter_2_state", self.ui.splitter_2.saveState()))
         else:
             screen = QDesktopWidget().screenGeometry()
             height = screen.height() * 6 / 7
@@ -232,40 +283,9 @@ class MainWindow(QMainWindow):
             self.setGeometry(int((screen.width() - width) / 2), int((screen.height() - height) / 2), int(width),
                              int(height))
 
-    def InitComboBox(self):
-        items = ["Microsoft Word 97-2003 文件（.doc）",
-                 "Microsoft Word 文件（.docx）",
-                 "Microsoft Excel 97-2003 文件（.xls）",
-                 "Microsoft Excel 文件（.xlsx）",
-                 "Microsoft PowerPoint 97-2003 文件（.ppt）",
-                 "Microsoft PowerPoint 文件（.pptx）",
-                 "Adobe PDF 文件（.pdf）",
-                 "EPUB 文件（.epub）",
-                 "MOBI 文件（.mobi）",
-                 "文本文档（.txt）"]
-        items_icon = [os.path.abspath(os.path.join(self.IconDir, 'doc.png')),
-                      os.path.abspath(os.path.join(self.IconDir, 'docx.png')),
-                      os.path.abspath(os.path.join(self.IconDir, 'xls.png')),
-                      os.path.abspath(os.path.join(self.IconDir, 'xlsx.png')),
-                      os.path.abspath(os.path.join(self.IconDir, 'ppt.png')),
-                      os.path.abspath(os.path.join(self.IconDir, 'pptx.png')),
-                      os.path.abspath(os.path.join(self.IconDir, 'pdf.png')),
-                      os.path.abspath(os.path.join(self.IconDir, 'epub.png')),
-                      os.path.abspath(os.path.join(self.IconDir, 'mobi.png')),
-                      os.path.abspath(os.path.join(self.IconDir, 'txt.png'))]
-        first_item = '全部文件类型'
-        first_item_icon = os.path.abspath(os.path.join(self.IconDir, 'sysfile.png'))
-        self.types_num = len(items)
-        self.ui.comboBox_type.InitComboBox(
-            first_item=first_item,
-            first_item_icon=first_item_icon,
-            items=items,
-            items_icon=items_icon,
-        )
-
     def InitRelayUpdate(self):
         self.relay_thread = RelayUpdateThread(self.socket, self.SettingPath, self.Name,
-                                              self.Name_, self.LogoPath, self.ExePath)
+                                              self.Name_, self.LogoPath, self.ExePath, self.IconDir)
         self.relay_thread.DateBaseCompleted.connect(self.InitSettingDateBase)
         self.relay_thread.DirAccepted.connect(self.UpdateDir)
         self.relay_thread.ExitAccepted.connect(self.ProgramExit)
@@ -302,14 +322,14 @@ class MainWindow(QMainWindow):
                                linewrap=self.mysetting_dict['_linewrap'],
                                linenumber=self.mysetting_dict['_linenumber'],
                                mysetting_dict=self.mysetting_dict)
+        self.ui.comboBox_type.InitComboBox(mysetting_dict=self.mysetting_dict)
+
         if self.mysetting_dict["_desktop"]:
             if not os.path.exists(self.LnkPath) and not os.path.exists(self.LnkPath2):
                 self.logger.info("桌面没有创建快捷方式,准备创建")
                 create_shortcut(sys.argv[0], self.Name_, "一个开源的、本地的、安全的、支持全文检索的搜索器。", self.LogoPath)
         if self.mysetting_dict["_last_dir_flag"] and self.mysetting_dict["_last_dir"].strip() != "":
             self.ui.comboBox_dir.setCurrentText(self.mysetting_dict["_last_dir"])
-        if self.mysetting_dict["_last_types_flag"]:
-            self.ui.comboBox_type.UpdateComboBox(self.types_num, self.mysetting_dict["_last_types"])
 
         self.ui.textframe.setText(self.Tips)
         self.ui.frame.setEnabled(True)
@@ -320,13 +340,13 @@ class MainWindow(QMainWindow):
         self.backend_thread = TrayThread(icon=self.icon, title=self.title)
         self.backend_thread.start()
         self.backend_thread.setting.connect(self.onClickedShowSettingWindow)
-        self.backend_thread.show.connect(self.onClickedShow)
+        self.backend_thread.show.connect(lambda: self.onClickedShow(True))
         self.backend_thread.help.connect(self.onClickedHelpWindow)
         self.backend_thread.exit.connect(self.onClickedExit)
         self.backend_thread.update.connect(self.onClickedUpdate)
         self.backend_thread.restart.connect(self.onClickedRestart)
 
-    def onClickedShow(self):
+    def onClickedShow(self, close=False):
         if self.isMinimized() or not self.isVisible():
             self.setWindowFlags(QtCore.Qt.Window)
             self.activateWindow()
@@ -335,124 +355,105 @@ class MainWindow(QMainWindow):
             else:
                 self.showNormal()
         else:
-            if self.isMaximized():
-                self.isMax = True
-            self.close()
+            if close:
+                if self.isMaximized():
+                    self.isMax = True
+                self.close()
 
     def onClickedRestart(self):
-        """ 进程控制实现自动重启"""
-        self.settings.setValue("geometry", self.saveGeometry())
-        self.settings.setValue("state", self.saveState())
-        self.settings.setValue("splitter_geometry", self.ui.splitter.saveGeometry())
-        self.settings.setValue("splitter_state", self.ui.splitter.saveState())
-        self.settings.setValue("splitter_2_geometry", self.ui.splitter_2.saveGeometry())
-        self.settings.setValue("splitter_2_state", self.ui.splitter_2.saveState())
+        self.saveSettingIni()
         self.backend_thread.OnDestroy()
         qApp.quit()
         self.p = QProcess
         s = self.p.startDetached(sys.executable, sys.argv)
 
     def onClickedExit(self):
-        self.settings.setValue("geometry", self.saveGeometry())
-        self.settings.setValue("state", self.saveState())
-        self.settings.setValue("splitter_geometry", self.ui.splitter.saveGeometry())
-        self.settings.setValue("splitter_state", self.ui.splitter.saveState())
-        self.settings.setValue("splitter_2_geometry", self.ui.splitter_2.saveGeometry())
-        self.settings.setValue("splitter_2_state", self.ui.splitter_2.saveState())
+        self.saveSettingIni()
         self.backend_thread.OnDestroy()
         qApp.quit()
         sys.exit(0)
 
     def onClickedShowSettingWindow(self):
-        if self.isMinimized() or not self.isVisible():
-            self.setWindowFlags(QtCore.Qt.Window)
-            self.activateWindow()
-            if self.isMax:
-                self.showMaximized()
-            else:
-                self.showNormal()
+        self.onClickedShow()
         settingwindow = SettingWindow(self)
         settingwindow.show()
 
     def onClickedFileWindow(self):
+        self.onClickedShow()
         filewindow = FileWindow(self)
         filewindow.show()
 
     def onClickedHelpWindow(self):
-        if self.isMinimized() or not self.isVisible():
-            self.setWindowFlags(QtCore.Qt.Window)
-            self.activateWindow()
-            if self.isMax:
-                self.showMaximized()
-            else:
-                self.showNormal()
+        self.onClickedShow()
         helpwindow = HelpWindow(self)
         helpwindow.show()
 
     def onClickedIndexWindow(self):
-        if self.isMinimized() or not self.isVisible():
-            self.setWindowFlags(QtCore.Qt.Window)
-            self.activateWindow()
-            if self.isMax:
-                self.showMaximized()
-            else:
-                self.showNormal()
+        self.onClickedShow()
         indexwindow = IndexWindow(self)
         indexwindow.show()
 
     def onClickedUpdate(self):
-        if self.isMinimized() or not self.isVisible():
-            self.setWindowFlags(QtCore.Qt.Window)
-            self.activateWindow()
-            if self.isMax:
-                self.showMaximized()
-            else:
-                self.showNormal()
+        self.onClickedShow()
         updatewindow = UpdateWindow(parent=self)
         updatewindow.show()
 
+    def saveSettingIni(self):
+        self.SettingsIni.setValue("geometry", self.saveGeometry())
+        self.SettingsIni.setValue("state", self.saveState())
+        self.SettingsIni.setValue("splitter_geometry", self.ui.splitter.saveGeometry())
+        self.SettingsIni.setValue("splitter_state", self.ui.splitter.saveState())
+        self.SettingsIni.setValue("splitter_2_geometry", self.ui.splitter_2.saveGeometry())
+        self.SettingsIni.setValue("splitter_2_state", self.ui.splitter_2.saveState())
+
     '''-----------------------------------搜索相关-----------------------------------------------'''
 
-    def SearchShowUi(self):
+    def SearchStartUi(self):
+        self.ui.tableView.tableModel.remove_all()
+        self.ui.listView_error.listModel.clear()
+        self.ui.listView_all.listModel.clear()
+        self.ui.textframe.clear()
+
         self.ui.progressBar.start()
         self.ui.progressBar.show()
         self.ui.top_lable.setText("搜索中")
         self.ui.bottom_lable.setText("搜索中·····")
+        self.ui.search_button.setText("停止")
+        self.ui.textframe.setText(self.SearchInfo)
 
-    def SearchHideeUi(self):
+    def SearchStopUi(self):
+        self.ui.search_button.setText("停止中···")
+        self.ui.search_button.setEnabled(False)
+
+    def SearchComplete(self):
+        self.ui.search_button.setEnabled(True)
         self.ui.progressBar.hide()
         self.ui.progressBar.stop()
         self.ui.top_lable.setText("搜索就绪")
         self.ui.bottom_lable.setText("搜索完毕!")
-
-    def SearchComplete(self):
-        self.SearchHideeUi()
-        self.logger.info("搜索完成")
         self.ui.search_button.setText("搜索")
-        self.search_running = False
+        self.logger.info("搜索完成")
         if self.mysetting_dict['_remind']:
             self.backend_thread.ShowToast("当前搜索完成")
 
+    def isRunning(self):
+        try:
+            return self.search_thread.isRunning()
+        except:
+            self.logger.info(traceback.format_exc())
+            return False
+
     def onClickedSearch(self):
-        if self.search_running:
+        if self.isRunning():
             reply = QMessageBox.information(self, '注意', '是否要停止搜索？', QMessageBox.Yes | QMessageBox.Cancel)
             if reply == QMessageBox.Yes:
-                self.logger.info("停止搜索线程")
-                self.SearchHideeUi()
-                self.search_running = False
-                self.search_thread.terminate()
-                self.ui.search_button.setText("搜索")
+                self.logger.info("开始停止搜索线程")
+                self.search_thread.stop()
         else:
-            self.ui.tableView.tableModel.remove_all()
-            self.ui.listView_error.listModel.clear()
-            self.ui.listView_all.listModel.clear()
-            self.ui.textframe.clear()
-
             self.comboBox_dir_text = self.ui.comboBox_dir.text()
             self.textEdit_keywords_text = self.ui.textEdit_keywords.text()
-            self.comboBox_type_text = self.ui.comboBox_type.get_text()
+            self.comboBox_type_text = self.ui.comboBox_type.text()
             self.comboBox_type_list = [x for x in self.comboBox_type_text.split(";") if x]
-
             if self.comboBox_dir_text == "":
                 self.ui.bottom_lable.setText("请先选择文件夹！")
                 QMessageBox.information(self, "提示", "请先选择文件夹！", QMessageBox.Ok)
@@ -466,47 +467,34 @@ class MainWindow(QMainWindow):
                 QMessageBox.information(self, "提示", "请先指定文件类型！", QMessageBox.Ok)
                 self.logger.info("文件类型为空")
             else:
-                self.SearchShowUi()
-                self.search_running = True
-                self.mysetting_dict["_last_types"] = self.ui.comboBox_type.getState()[1:]
-                self.mysetting_dict["_last_dir"] = self.comboBox_dir_text
                 self.logger.info("开启搜索线程")
+                self.ui.comboBox_type.saveState()
+                self.mysetting_dict["_last_dir"] = self.comboBox_dir_text
                 if self.comboBox_dir_text == "全部目录":
                     self._comboBox_dir_list = self.ui.comboBox_dir.get_devices()
                 else:
                     self._comboBox_dir_list = self.comboBox_dir_text.split("|")
-                _limit_file_size = self.mysetting_dict['_limit_file_size']
-                _exclude_dir = self.mysetting_dict['_exclude_dir']
-                # mlist = []
-                # for i in self._comboBox_dir_list:
-                #     for a in self._comboBox_dir_list:
-                #         if len(a) > len(i) and i in a:
-                #             mlist.append(a)
-                # self.comboBox_dir_list = list(set(mlist) ^ set(self._comboBox_dir_list))
                 self.comboBox_dir_list = self._comboBox_dir_list
-                self.nowtime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                self.search_info = "\n\n".join((
-                    "开始时间：" + str(self.nowtime),
-                    "搜索类型：" + str(self.comboBox_type_list),
-                    "文件限制：" + str(_limit_file_size) + "M",
+                self.SearchInfo = "\n\n".join((
+                    "开始时间：" + str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "\t\t"),
+                    "搜索类型：" + str(self.comboBox_type_list) + "\t\t",
+                    "文件限制：" + str(self.mysetting_dict['_limit_file_size']) + "M",
                     "搜索目录：\n" + "\n".join(self.comboBox_dir_list),
-                    "忽略目录：\n" + "\n".join(_exclude_dir)))
-                self.logger.info(self.search_info)
+                    "忽略目录：\n" + "\n".join(self.mysetting_dict['_exclude_dir'])))
+                self.logger.info(self.SearchInfo)
                 self.search_thread = SearchThread(
                     DirPaths=self.comboBox_dir_list,
-                    types=self.comboBox_type_list,
                     CurPath=self.CurPath,
-                    keywords=self.textEdit_keywords_text,
+                    IconDict=self.IconDict,
+                    types=self.comboBox_type_list,
                     logger=self.logger,
                     queue=self.queue,
-                    show_all=self.mysetting_dict['_show_all'],
-                    _limit_file_size=_limit_file_size,
-                    _limit_office_time=self.mysetting_dict['_limit_office_time'],
-                    _exclude_dir=_exclude_dir
-                )
+                    mysetting_dict=self.mysetting_dict,
+                    keywords=self.textEdit_keywords_text)
+                self.search_thread.started.connect(self.SearchStartUi)
+                self.search_thread.finished.connect(lambda: self.queue.put(("completed",1)))
+                self.search_thread.stoped.connect(self.SearchStopUi)
                 self.search_thread.start()
-                self.ui.search_button.setText("停止")
-                self.ui.textframe.setText(self.search_info)
 
 
 class RelayUpdateThread(QThread):
@@ -514,7 +502,7 @@ class RelayUpdateThread(QThread):
     DirAccepted = pyqtSignal(str)
     ExitAccepted = pyqtSignal()
 
-    def __init__(self, socket, SettingPath, Name, Name_, LogoPath, ExePath):
+    def __init__(self, socket, SettingPath, Name, Name_, LogoPath, ExePath, IconDir):
         super().__init__()
         self.socket = socket
         self.SettingPath = SettingPath
@@ -522,6 +510,7 @@ class RelayUpdateThread(QThread):
         self.Name_ = Name_
         self.ExePath = ExePath
         self.LogoPath = LogoPath
+        self.IconDir = IconDir
 
     def run(self):
         self.settingdb()
@@ -540,8 +529,6 @@ class RelayUpdateThread(QThread):
             self.mysetting_dict['_auto_run'] = True
             self.mysetting_dict['_last_dir_flag'] = True
             self.mysetting_dict['_last_dir'] = ""
-            self.mysetting_dict['_last_types_flag'] = True
-            self.mysetting_dict['_last_types'] = []
             self.mysetting_dict['_right_menu'] = True
             self.mysetting_dict['_remind'] = True
             self.mysetting_dict['_show_all'] = False
@@ -554,6 +541,10 @@ class RelayUpdateThread(QThread):
             self.mysetting_dict['_common_dir'] = []
             self.mysetting_dict['_exclude_dir'] = []
             self.mysetting_dict['_desktop'] = True
+            self.mysetting_dict["_types_dict"] = GetTypesDict(self.IconDir)
+            self.mysetting_dict["_text_types_dict"] = GetTextTypesDict(self.IconDir)
+            self.mysetting_dict["_image_types_dict"] = GetImageTypesDict(self.IconDir)
+
             if not set_auto(name=self.Name, exe_path=self.ExePath):
                 self.mysetting_dict['_auto_run'] = False
             if not set_right_menu(name=self.Name_, content=self.Name_ + " 搜索", icon=self.LogoPath,
@@ -570,8 +561,8 @@ def main():
 
     Name = "OpenSearcher"
     Name_ = "Open Searcher"
-    Version = "0.0.8"
-    UpdateUrl = "https://aidcs-1256440297.cos.ap-beijing.myqcloud.com/OpenSearcher/update.txt"
+    Version = "0.0.9"
+    UpdateUrl = "https://gitee.com/gao_yongxian/OpenSearcher/raw/main/update.txt"
 
     CurPath = os.path.dirname(os.path.abspath(sys.argv[0]))
     os.environ['REQUESTS_CA_BUNDLE'] = os.path.abspath(os.path.join(CurPath, 'cacert.pem'))

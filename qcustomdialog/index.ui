@@ -243,7 +243,7 @@
              <item alignment="Qt::AlignVCenter">
               <widget class="QComboDirBox" name="comboBox_dir">
                <property name="sizePolicy">
-                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
                  <horstretch>0</horstretch>
                  <verstretch>0</verstretch>
                 </sizepolicy>
@@ -263,7 +263,7 @@
               </widget>
              </item>
              <item alignment="Qt::AlignVCenter">
-              <widget class="QComboCheckBox" name="comboBox_type">
+              <widget class="QComboCustomBox" name="comboBox_type">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                  <horstretch>0</horstretch>
@@ -288,7 +288,7 @@
               <widget class="QPushButton" name="pushButton">
                <property name="minimumSize">
                 <size>
-                 <width>0</width>
+                 <width>100</width>
                  <height>30</height>
                 </size>
                </property>
@@ -347,11 +347,6 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>QComboCheckBox</class>
-   <extends>QComboBox</extends>
-   <header>qcombocheckbox.h</header>
-  </customwidget>
-  <customwidget>
    <class>QLoadingProgressBar</class>
    <extends>QProgressBar</extends>
    <header>qloadingprogressbar.h</header>
@@ -365,6 +360,11 @@
    <class>QClickableLabel</class>
    <extends>QLabel</extends>
    <header>qclickablelabel.h</header>
+  </customwidget>
+  <customwidget>
+   <class>QComboCustomBox</class>
+   <extends>QComboBox</extends>
+   <header>qcombocustombox.h</header>
   </customwidget>
  </customwidgets>
  <resources/>
