@@ -14,6 +14,10 @@ def windowEnumerationHandler(hwnd, resultList):
     """Pass to win32gui.EnumWindows() to generate list of window handle, window text tuples."""
     resultList.append((hwnd, win32gui.GetWindowText(hwnd)))
 
+def getwindow():
+    topWindows = []
+    win32gui.EnumWindows(windowEnumerationHandler, topWindows)
+    return topWindows
 
 def killwindow(suffixList):
     # We can pass this, along a list to hold the results, into win32gui.EnumWindows(), as so:
@@ -55,3 +59,4 @@ def KillAllOffice():
 
 if __name__ == "__main__":
     KillAllOffice()
+    # print(getwindow())

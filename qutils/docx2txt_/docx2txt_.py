@@ -14,20 +14,38 @@ logger = logging.getLogger(__name__)
 def docx2txt_win32(doc_path, temp_docx_path, _limit_office_time) -> str:
     try:
         word = GetWord()
-        t = Timer(_limit_office_time, KillAllOffice)
-        t.start()
+        t1 = Timer(_limit_office_time, KillAllOffice)
+        t2 = Timer(_limit_office_time, KillAllOffice)
+        t3 = Timer(_limit_office_time, KillAllOffice)
+
+        t1.start()
         # https://learn.microsoft.com/zh-cn/office/vba/api/word.documents.opennorepairdialog
         # doc = word.Documents.OpenNoRepairDialog(FileName=doc_path, ConfirmConversions=False, ReadOnly=True)
         doc = word.Documents.OpenNoRepairDialog(doc_path, False, True)
-        t.cancel()
+        t1.cancel()
+
+        t2.start()
         doc.SaveAs(temp_docx_path, 12)
+        t2.cancel()
+
+        t3.start()
         doc.Close()
+        t3.cancel()
+
         text = docx2txt.process(temp_docx_path)
         os.remove(temp_docx_path)
         return text
     except:
         try:
-            t.cancel()
+            t1.cancel()
+        except:
+            pass
+        try:
+            t2.cancel()
+        except:
+            pass
+        try:
+            t3.cancel()
         except:
             pass
         KillAllOffice()

@@ -72,12 +72,12 @@
 ## 文件下载
 
 * 0.0.9
-* [绿色版](https://gaoyongxian.lanzouy.com/in4vW0hx94ji)  
-* [安装包](https://gaoyongxian.lanzouy.com/ikVD40hx97kh)
-* [绿色版32位](https://gaoyongxian.lanzouy.com/ijz1W0hx905a)  
-* [Win7绿色版](https://gaoyongxian.lanzouy.com/iMS0N0hx92fc)  
-* [Win7安装包](https://gaoyongxian.lanzouy.com/iiSnM0hx96sj)
-* [Win7绿色版32位](https://gaoyongxian.lanzouy.com/ixSm10hx8yle)  
+* [绿色版](https://gaoyongxian.lanzouy.com/i6Mlq0hxdd7e)  
+* [安装包](https://gaoyongxian.lanzouy.com/iZgFI0hxde9c)
+* [绿色版32位](https://gaoyongxian.lanzouy.com/idzvb0hxda6f)  
+* [Win7绿色版](https://gaoyongxian.lanzouy.com/i7c7F0hxdd0h)  
+* [Win7安装包](https://gaoyongxian.lanzouy.com/iAVGP0hxddtg)
+* [Win7绿色版32位](https://gaoyongxian.lanzouy.com/ih8VL0hxd7ri)  
 
 * 百度网盘下载链接
 链接: https://pan.baidu.com/s/1iiFdEUzlq85tpfZgrMdv-Q?pwd=6t85 提取码: 6t85 复制这段内容后打开百度网盘手机App，操作更方便哦
