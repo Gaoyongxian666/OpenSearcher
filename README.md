@@ -42,6 +42,8 @@
 
 
 ## 更新日志
+* 1.0.0.1
+  * 2022.12.06 感谢 @JWL 反馈的部分未加try语句的代码导致软件崩溃问题，添加搜索信息等。 
 * 0.0.9
   * 2022.12.05 添加读取图像元数据（EXIF, IPTC, XMP），添加更多文本格式，解决内存泄露导致的内存堆积，优化频繁启动Office的错误逻辑，提升速度等。  
 * 0.0.8
@@ -71,13 +73,13 @@
 
 ## 文件下载
 
-* 0.0.9
-* [绿色版](https://gaoyongxian.lanzouy.com/i6Mlq0hxdd7e)  
-* [安装包](https://gaoyongxian.lanzouy.com/iZgFI0hxde9c)
-* [绿色版32位](https://gaoyongxian.lanzouy.com/idzvb0hxda6f)  
-* [Win7绿色版](https://gaoyongxian.lanzouy.com/i7c7F0hxdd0h)  
-* [Win7安装包](https://gaoyongxian.lanzouy.com/iAVGP0hxddtg)
-* [Win7绿色版32位](https://gaoyongxian.lanzouy.com/ih8VL0hxd7ri)  
+* 1.0.0.1
+* [绿色版](https://gaoyongxian.lanzouy.com/idZzW0hzw7he)  
+* [安装包](https://gaoyongxian.lanzouy.com/iANgh0hzwe7g)
+* [绿色版32位](https://gaoyongxian.lanzouy.com/izn6U0hzw0oj)  
+* [Win7绿色版](https://gaoyongxian.lanzouy.com/i3H7n0hzw47g)  
+* [Win7安装包](https://gaoyongxian.lanzouy.com/iLWtr0hzwaej)
+* [Win7绿色版32位](https://gaoyongxian.lanzouy.com/iWY770hzvysb)  
 
 * 百度网盘下载链接
 链接: https://pan.baidu.com/s/1iiFdEUzlq85tpfZgrMdv-Q?pwd=6t85 提取码: 6t85 复制这段内容后打开百度网盘手机App，操作更方便哦

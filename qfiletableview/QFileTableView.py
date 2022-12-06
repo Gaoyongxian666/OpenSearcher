@@ -27,7 +27,7 @@ class QFileTableView(QTableView):
         if table_row == -1:
             QMessageBox.information(self, '注意', '请先选中一项！', QMessageBox.Yes)
             return
-        _index = self.tableModel.index(table_row, 3, QModelIndex())
+        _index = self.tableModel.index(table_row, 2, QModelIndex())
         file_path = (str(_index.data()))
         try:
             os.startfile(file_path)
@@ -51,7 +51,7 @@ class QFileTableView(QTableView):
         if table_row == -1:
             QMessageBox.information(self, '注意', '请先选中一项！', QMessageBox.Yes)
             return
-        _index = self.tableModel.index(table_row, 3, QModelIndex())
+        _index = self.tableModel.index(table_row, 2, QModelIndex())
         file_path = (str(_index.data()))
         setClipboardFiles([file_path])
 

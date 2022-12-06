@@ -59,26 +59,27 @@ class MainWindow(QMainWindow):
         self.isMax = False
         self.queue = Queue()
         self.SettingsIni = QSettings(os.path.abspath(os.path.join(self.CurPath, 'settings.ini')), QSettings.IniFormat)
-        self.SearchInfo = "\n".join(("搜索类型：None\t\t\t",
-                                     "搜索目录：None\t\t\t",
-                                     "文件限制：None\t\t\t",
-                                     "忽略目录：None\t\t\t"))
+
         self.IconDict = {}
+        self.SearchInfoDict = {}
         self.Tips = '''使用提示：
 
-1. 尽量不要选择全盘搜索，而是选择某个文件夹进行搜索，因为Python读取目录太慢了。
+1. 尽量不要选择全盘搜索，而是选择某个文件夹进行搜索，Python读取全盘目录太慢了。
 
-2. 利用空闲时间，提前建立索引缓存，第一次搜索目录速度很慢，但是下次搜索将会很快。
+2. 利用空闲时间，提前建立索引缓存，第一次搜索某目录速度很慢，但是下次搜索将会很快。
 
-3. 在搜索进行中，必须退出word、excel等文档，因为搜索中强行关闭Office会影响你的文档。
+3. 在搜索时，必须退出word、excel等文档，因为搜索中强行关闭Office会影响你的文档。
 
-4. 更新版本时，不用重新建立索引，直接将上一版本安装目录下.temp文件夹复制到本版本的安装目录下。'''
+4. 点击右上角“搜索就绪”或者“搜索进度”，可以查看搜索信息。
+
+5. 更新版本时，不用重新建立索引，直接将上一版本安装目录下.temp文件夹复制到本版本的安装目录下。'''
 
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.ui.frame.setEnabled(False)
         self.Init()
-        self.InitIcon()
+        self.InitIconDict()
+        self.InitSearchInfoDict()
         self.InitTrayIcon()
         self.InitLogger()
         self.InitGeometry()
@@ -146,6 +147,8 @@ class MainWindow(QMainWindow):
                     self.ui.top_lable.setText(content[1])
                 elif content[0] == "update_bottom_lable":
                     self.ui.bottom_lable.setText(content[1])
+                elif content[0] == "update_search_info":
+                    self.UpdateSearchInfo(content[1])
                 elif content[0] == "loading":
                     self.ui.bottom_lable.setText(content[1])
                     self.ui.textframe.Search(Loading=True, CurPath=self.CurPath, FilePath=content[1],
@@ -156,6 +159,58 @@ class MainWindow(QMainWindow):
                             self.ui.frame_center_left.hide()
                 elif content[0] == "_common_dir":
                     self.ui.comboBox_dir.setCurrentText(content[1])
+
+    def UpdateSearchInfo(self, info_dict=None):
+        if info_dict is None:
+            info_dict = {}
+        try:
+            self.SearchInfoDict["start_time"] = info_dict["start_time"]
+        except:
+            pass
+        try:
+            self.SearchInfoDict["all"] = info_dict["all"]
+        except:
+            pass
+        try:
+            self.SearchInfoDict["selected"] = info_dict["selected"]
+        except:
+            pass
+        try:
+            self.SearchInfoDict["haskey"] = info_dict["haskey"]
+        except:
+            pass
+        try:
+            self.SearchInfoDict["error"] = info_dict["error"]
+        except:
+            pass
+        try:
+            self.SearchInfoDict["types"] = info_dict["types"]
+        except:
+            pass
+        try:
+            self.SearchInfoDict["dirs"] = info_dict["dirs"]
+        except:
+            pass
+        try:
+            self.SearchInfoDict["limited"] = info_dict["limited"]
+        except:
+            pass
+        try:
+            self.SearchInfoDict["exclude"] = info_dict["exclude"]
+        except:
+            pass
+        self.UpdateSearchInfo_()
+
+    def UpdateSearchInfo_(self):
+        self.SearchInfo = "\n\n".join((
+            "开始时间：%s\t\t\t" % self.SearchInfoDict["start_time"],
+            "搜索类型：%s\t\t\t" % self.SearchInfoDict["types"],
+            "文件限制：%s\t\t\t" % self.SearchInfoDict["limited"],
+            "搜索目录：\n%s\t\t\t" % self.SearchInfoDict["dirs"],
+            "忽略目录：\n%s\t\t\t" % self.SearchInfoDict["exclude"],
+            "共搜索文件：%d个，满足搜索条件的文件：%d个\t\t\t" % (self.SearchInfoDict["all"], self.SearchInfoDict["selected"]),
+            "其中：包含关键词的文件：%d个，处理出错的文件：%d个\t\t\t" % (self.SearchInfoDict["haskey"], self.SearchInfoDict["error"]),
+        ))
 
     def onClickedCustomTypeWindow(self):
         self.onClickedShow()
@@ -220,7 +275,7 @@ class MainWindow(QMainWindow):
 
     '''-----------------------------------初始化设置 and 耗时操作线程（以及监听端口）-----------------------------------------------'''
 
-    def InitIcon(self):
+    def InitIconDict(self):
         self.IconDict["icon_doc"] = QIcon(os.path.abspath(os.path.join(self.IconDir, "doc.png")))
         self.IconDict["icon_docx"] = QIcon(os.path.abspath(os.path.join(self.IconDir, "docx.png")))
         self.IconDict["icon_xls"] = QIcon(os.path.abspath(os.path.join(self.IconDir, "xls.png")))
@@ -249,6 +304,18 @@ class MainWindow(QMainWindow):
         self.IconDict["icon_yaml"] = QIcon(os.path.abspath(os.path.join(self.IconDir, "yaml.png")))
         self.IconDict["icon_json"] = QIcon(os.path.abspath(os.path.join(self.IconDir, "json.png")))
         self.IconDict["icon_srt"] = QIcon(os.path.abspath(os.path.join(self.IconDir, "srt.png")))
+
+    def InitSearchInfoDict(self):
+        self.SearchInfoDict["start_time"] = ""
+        self.SearchInfoDict["all"] = 0
+        self.SearchInfoDict["selected"] = 0
+        self.SearchInfoDict["haskey"] = 0
+        self.SearchInfoDict["error"] = 0
+        self.SearchInfoDict["types"] = ""
+        self.SearchInfoDict["dirs"] = ""
+        self.SearchInfoDict["limited"] = ""
+        self.SearchInfoDict["exclude"] = ""
+        self.UpdateSearchInfo_()
 
     def InitComboBox(self, mysetting_dict):
         self.ui.comboBox_type.InitComboBox(mysetting_dict)
@@ -323,7 +390,6 @@ class MainWindow(QMainWindow):
                                linenumber=self.mysetting_dict['_linenumber'],
                                mysetting_dict=self.mysetting_dict)
         self.ui.comboBox_type.InitComboBox(mysetting_dict=self.mysetting_dict)
-
         if self.mysetting_dict["_desktop"]:
             if not os.path.exists(self.LnkPath) and not os.path.exists(self.LnkPath2):
                 self.logger.info("桌面没有创建快捷方式,准备创建")
@@ -412,14 +478,13 @@ class MainWindow(QMainWindow):
         self.ui.tableView.tableModel.remove_all()
         self.ui.listView_error.listModel.clear()
         self.ui.listView_all.listModel.clear()
-        self.ui.textframe.clear()
+        self.ui.textframe.setText(self.Tips)
 
         self.ui.progressBar.start()
         self.ui.progressBar.show()
         self.ui.top_lable.setText("搜索中")
         self.ui.bottom_lable.setText("搜索中·····")
         self.ui.search_button.setText("停止")
-        self.ui.textframe.setText(self.SearchInfo)
 
     def SearchStopUi(self):
         self.ui.search_button.setText("停止中···")
@@ -475,12 +540,18 @@ class MainWindow(QMainWindow):
                 else:
                     self._comboBox_dir_list = self.comboBox_dir_text.split("|")
                 self.comboBox_dir_list = self._comboBox_dir_list
-                self.SearchInfo = "\n\n".join((
-                    "开始时间：" + str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "\t\t"),
-                    "搜索类型：" + str(self.comboBox_type_list) + "\t\t",
-                    "文件限制：" + str(self.mysetting_dict['_limit_file_size']) + "M",
-                    "搜索目录：\n" + "\n".join(self.comboBox_dir_list),
-                    "忽略目录：\n" + "\n".join(self.mysetting_dict['_exclude_dir'])))
+
+                self.queue.put(("update_search_info", {
+                    "start_time": str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
+                    "types": str(self.comboBox_type_list),
+                    "limited": str(self.mysetting_dict['_limit_file_size']) + "M",
+                    "dirs": str("\n".join(self.comboBox_dir_list)),
+                    "exclude": str("\n".join(self.mysetting_dict['_exclude_dir'])),
+                    "all": 0,
+                    "selected": 0,
+                    "error": 0,
+                    "haskey": 0,
+                }))
                 self.logger.info(self.SearchInfo)
                 self.search_thread = SearchThread(
                     DirPaths=self.comboBox_dir_list,
@@ -492,7 +563,7 @@ class MainWindow(QMainWindow):
                     mysetting_dict=self.mysetting_dict,
                     keywords=self.textEdit_keywords_text)
                 self.search_thread.started.connect(self.SearchStartUi)
-                self.search_thread.finished.connect(lambda: self.queue.put(("completed",1)))
+                self.search_thread.finished.connect(lambda: self.queue.put(("completed", 1)))
                 self.search_thread.stoped.connect(self.SearchStopUi)
                 self.search_thread.start()
 
@@ -561,7 +632,7 @@ def main():
 
     Name = "OpenSearcher"
     Name_ = "Open Searcher"
-    Version = "0.0.9"
+    Version = "1.0.0.1"
     UpdateUrl = "https://gitee.com/gao_yongxian/OpenSearcher/raw/main/update.txt"
 
     CurPath = os.path.dirname(os.path.abspath(sys.argv[0]))

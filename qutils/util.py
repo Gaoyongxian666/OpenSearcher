@@ -53,25 +53,29 @@ def getsublist(path, pathlist):
     return sublist
 
 
-def file_name_list(dir_path: str, types: list,IconDict, exclude=None, size_limit=100,
-                   search_running=None) -> list:
+def file_name_list(dir_path: str, types: list, IconDict, exclude=None, size_limit=100,
+                   search_running=None):
     """返回指定类型的文件列表"""
     if search_running is None:
         search_running = [True]
     if exclude is None:
         exclude = []
     L = []
+    AllFiles = 0
+    SelectedFiles = 0
     if len(getparentlist(dir_path, exclude)) == 0 and not contains_same_path(dir_path, exclude):
         for root, dirs, files in os.walk(dir_path, topdown=True):
             if not search_running[0]:
                 break
             dirs[:] = [d for d in dirs if not contains_same_path(os.path.abspath(os.path.join(root, d)), exclude)]
             for file in files:
+                AllFiles = AllFiles + 1
                 if "~$" not in file:
                     filename = os.path.splitext(file)
                     filename_ = filename[0]
                     suffix = filename[1]
                     if suffix in types and filename_[0] != "$":
+                        SelectedFiles = SelectedFiles + 1
                         absolute_path = os.path.abspath(os.path.join(root, file))
 
                         icon_ = IconDict["icon_%s" % suffix[1:]]
@@ -82,7 +86,7 @@ def file_name_list(dir_path: str, types: list,IconDict, exclude=None, size_limit
                                       (None, suffix)])
                         else:
                             logger.info("文件太大：" + str(getDocSize(absolute_path)) + "。文件路径：" + absolute_path)
-    return L
+    return {"list": L, "all": AllFiles, "selected": SelectedFiles}
 
 
 def formatSize(bytes):
@@ -111,6 +115,7 @@ def getDocSize(path):
         return formatSize(size)
     except Exception as err:
         logger.info(err)
+        return "获取失败"
 
 
 def warning_on_one_line(message, category, filename, lineno, file=None, line=None):
@@ -274,6 +279,7 @@ def set_right_menu(name, content, icon, exe_path):
             win32api.MessageBox(0, traceback.format_exc(), name, win32con.MB_OK)
             logger.info(traceback.format_exc())
             return False
+
 
 def get_text(file_suffix, file_absolute_path, file_md5, temp_path, antiword_path, _limit_office_time) -> str:
     """转字符串返回处理结果"""
