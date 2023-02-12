@@ -615,6 +615,8 @@ class RelayUpdateThread(QThread):
             self.mysetting_dict["_types_dict"] = GetTypesDict(self.IconDir)
             self.mysetting_dict["_text_types_dict"] = GetTextTypesDict(self.IconDir)
             self.mysetting_dict["_image_types_dict"] = GetImageTypesDict(self.IconDir)
+            self.mysetting_dict["_image_types_list"] = []
+            self.mysetting_dict["_text_types_list"] = []
 
             if not set_auto(name=self.Name, exe_path=self.ExePath):
                 self.mysetting_dict['_auto_run'] = False
@@ -632,10 +634,11 @@ def main():
 
     Name = "OpenSearcher"
     Name_ = "Open Searcher"
-    Version = "1.0.0.1"
+    Version = "1.0.0.2"
     UpdateUrl = "https://gitee.com/gao_yongxian/OpenSearcher/raw/main/update.txt"
 
     CurPath = os.path.dirname(os.path.abspath(sys.argv[0]))
+
     os.environ['REQUESTS_CA_BUNDLE'] = os.path.abspath(os.path.join(CurPath, 'cacert.pem'))
     LogoPath = os.path.abspath(os.path.join(CurPath, "icon/logo.ico"))
     if sys.argv[0][-3:] == ".py":

@@ -25,6 +25,8 @@ class SearchThread(QThread):
         self.logger = logger
         self.queue = queue
         self.mysetting_dict = mysetting_dict
+        self._image_types_list = self.mysetting_dict["_image_types_list"]
+        self._text_types_list = self.mysetting_dict["_text_types_list"]
 
         self._limit_office_time = self.mysetting_dict["_limit_office_time"]
         self._limit_file_size = self.mysetting_dict["_limit_file_size"]
@@ -117,7 +119,9 @@ class SearchThread(QThread):
                         return 2
             else:
                 try:
-                    text = get_text(file_suffix=file_suffix, file_absolute_path=absolute_path, file_md5=file_md5,
+                    text = get_text(_image_types_list=self._image_types_list,
+                                    _text_types_list=self._text_types_list,
+                                    file_suffix=file_suffix, file_absolute_path=absolute_path, file_md5=file_md5,
                                     temp_path=self.temp_path, antiword_path=self.antiword_path,
                                     _limit_office_time=self._limit_office_time)
                     with open(absolute_path, 'rb') as f:

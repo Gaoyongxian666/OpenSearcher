@@ -30,7 +30,7 @@
 
 
 ## 关于项目
-&nbsp;&nbsp;这实际上是一个仿照AnyTxT写的项目，只是因为AnyTxT不开源，由于保密原则，某些环境下无法使用，所以自己写了一个开源项目，如果你单位也有保密原则，不妨试试，本项目所有依赖和包都是开源的，你也可以查看项目代码，自行打包。 由于不太懂设计美化，但是项目里面界面都是```.ui```文件，如果有会```qss```美化的可以帮忙```fork```美化一下。
+&nbsp;&nbsp;这实际上是一个仿照AnyTxT写的项目，只是因为AnyTxT不开源，由于保密原则，某些环境下无法使用，所以自己写了一个开源项目，如果你单位也有保密原则，不妨试试，本项目所有依赖和包都是开源的，你也可以查看项目代码，自行打包。 由于不太懂设计美化，但是项目里面界面都是```.ui```文件，如果有会```qss```美化的可以帮忙```fork```美化一下。  
 
 
 ## 开源地址
@@ -42,6 +42,8 @@
 
 
 ## 更新日志
+* 1.0.0.2
+  * 2023.02.12 可以添加自定义类型格式。
 * 1.0.0.1
   * 2022.12.06 感谢 @JWL 反馈的部分未加try语句的代码导致软件崩溃问题，添加搜索信息等。 
 * 0.0.9
@@ -72,14 +74,12 @@
 ![预览图](https://pic.imgdb.cn/item/637cd07b16f2c2beb17378f1.png)  
 
 ## 文件下载
-
-* 1.0.0.1
-* [绿色版](https://gaoyongxian.lanzouy.com/idZzW0hzw7he)  
-* [安装包](https://gaoyongxian.lanzouy.com/iANgh0hzwe7g)
-* [绿色版32位](https://gaoyongxian.lanzouy.com/izn6U0hzw0oj)  
-* [Win7绿色版](https://gaoyongxian.lanzouy.com/i3H7n0hzw47g)  
-* [Win7安装包](https://gaoyongxian.lanzouy.com/iLWtr0hzwaej)
-* [Win7绿色版32位](https://gaoyongxian.lanzouy.com/iWY770hzvysb)  
+* 1.0.0.2
+* [绿色版](https://gaoyongxian.lanzouy.com/iCJFN0ndpxbg)  
+* [安装包](https://gaoyongxian.lanzouy.com/iGG5G0ndpoef)
+* [Win7绿色版](https://gaoyongxian.lanzouy.com/i2APm0ndprrg)  
+* [Win7安装包](https://gaoyongxian.lanzouy.com/izbeL0ndpm1a)
+* 不再提供32位  
 
 * 百度网盘下载链接
 链接: https://pan.baidu.com/s/1iiFdEUzlq85tpfZgrMdv-Q?pwd=6t85 提取码: 6t85 复制这段内容后打开百度网盘手机App，操作更方便哦

@@ -137,6 +137,12 @@ def GetTextTypesDict(IconDir):
             "types": [".md", ".markdown"],
             "state": False
         },
+        "html": {
+            "name": "HTML 文件",
+            "icon": os.path.abspath(os.path.join(IconDir, 'sysfile.png')),
+            "types": [".html", ".htm"],
+            "state": False
+        },
     }
     return types_dict
 

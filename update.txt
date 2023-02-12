@@ -1,1 +1,1 @@
-{"version":"1.0.0.1","url":"https://gitee.com/gao_yongxian/OpenSearcher"}
+{"version":"1.0.0.2","url":"https://gitee.com/gao_yongxian/OpenSearcher"}

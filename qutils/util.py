@@ -77,8 +77,10 @@ def file_name_list(dir_path: str, types: list, IconDict, exclude=None, size_limi
                     if suffix in types and filename_[0] != "$":
                         SelectedFiles = SelectedFiles + 1
                         absolute_path = os.path.abspath(os.path.join(root, file))
-
-                        icon_ = IconDict["icon_%s" % suffix[1:]]
+                        try:
+                            icon_ = IconDict["icon_%s" % suffix[1:]]
+                        except:
+                            icon_ = IconDict["icon_txt"]
                         if os.path.getsize(absolute_path) < size_limit * 1024 * 1024:
                             L.append([(icon_, file),
                                       (None, getDocSize(absolute_path)),
@@ -281,10 +283,14 @@ def set_right_menu(name, content, icon, exe_path):
             return False
 
 
-def get_text(file_suffix, file_absolute_path, file_md5, temp_path, antiword_path, _limit_office_time) -> str:
+def get_text(_image_types_list, _text_types_list, file_suffix, file_absolute_path, file_md5, temp_path, antiword_path,
+             _limit_office_time) -> str:
     """转字符串返回处理结果"""
+
     image_types_list = [".psd", ".png", ".jpg", ".jpeg", ".raw", ".tiff", ".bmp"]
+    image_types_list.extend(_image_types_list)
     txt_types_list = [".txt", ".srt", ".json", ".yaml", ".config", ".md", ".markdown"]
+    txt_types_list.extend(_text_types_list)
     if file_suffix == ".docx":
         temp_docx_path = os.path.abspath(os.path.join(temp_path, file_md5 + ".docx"))
         text = docx2txt_.process(docx_path=file_absolute_path,
