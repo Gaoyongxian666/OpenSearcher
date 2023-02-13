@@ -75,11 +75,11 @@
 
 ## 文件下载
 * 1.0.0.2
-* [绿色版](https://gaoyongxian.lanzouy.com/iCJFN0ndpxbg)  
-* [安装包](https://gaoyongxian.lanzouy.com/iGG5G0ndpoef)
-* [Win7绿色版](https://gaoyongxian.lanzouy.com/i2APm0ndprrg)  
-* [Win7安装包](https://gaoyongxian.lanzouy.com/izbeL0ndpm1a)
-* 不再提供32位  
+* [绿色版](https://gaoyongxian.lanzouy.com/iY3CB0ngj7ja)  
+* [安装包](https://gaoyongxian.lanzouy.com/ivG5O0ngjdvi)
+* [Win7绿色版](https://gaoyongxian.lanzouy.com/iXKqZ0ngj3sf)  
+* [Win7安装包](https://gaoyongxian.lanzouy.com/izTgE0ngjaba)
+* [Win7_32位安装包](https://gaoyongxian.lanzouy.com/iLWC70ngjlbg)  
 
 * 百度网盘下载链接
 链接: https://pan.baidu.com/s/1iiFdEUzlq85tpfZgrMdv-Q?pwd=6t85 提取码: 6t85 复制这段内容后打开百度网盘手机App，操作更方便哦
