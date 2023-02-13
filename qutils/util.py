@@ -289,8 +289,9 @@ def get_text(_image_types_list, _text_types_list, file_suffix, file_absolute_pat
 
     image_types_list = [".psd", ".png", ".jpg", ".jpeg", ".raw", ".tiff", ".bmp"]
     image_types_list.extend(_image_types_list)
-    txt_types_list = [".txt", ".srt", ".json", ".yaml", ".config", ".md", ".markdown"]
+    txt_types_list = [".txt", ".srt", ".json", ".yaml", ".config", ".md", ".markdown", ".html", ".htm"]
     txt_types_list.extend(_text_types_list)
+    print(txt_types_list)
     if file_suffix == ".docx":
         temp_docx_path = os.path.abspath(os.path.join(temp_path, file_md5 + ".docx"))
         text = docx2txt_.process(docx_path=file_absolute_path,
